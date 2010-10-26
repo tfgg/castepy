@@ -247,6 +247,9 @@ class SimpleCalculation:
 
 class Castep:
     castep_path = "/users2/green/CASTEP-5.5/obj/linux_x86_64_ifort11/castep"
+
+    def __init__(self, castep_path):
+        self.castep_path = castep_path
     
     def execute(self, calculation):
         """
