@@ -19,22 +19,24 @@ class NMRResult:
       self.parse(castep_file)
 
   def parse(self, castep_file):
-    search_result = self.nmr_regex.search(castep_file)
+    search_results = self.nmr_regex.findall(castep_file)
 
-    if search_result is None:
+    if search_results is []:
       raise NoNMRResult()
 
-    heading_groups = self.heading_group_regex.findall(search_result.group(1))
-    headings = self.heading_regex.findall(search_result.group(2))
+    search_result = search_results[len(search_results) - 1]
 
-    entry_rows = self.entry_row_regex.findall(search_result.group(3))
+    heading_groups = self.heading_group_regex.findall(search_result[0])
+    headings = self.heading_regex.findall(search_result[1])
+
+    entry_rows = self.entry_row_regex.findall(search_result[2])
 
     if entry_rows is None:
       raise NoNMRIons()
     
     #self.groups, _ = zip(*sorted(self.entry_regex.groupindex.items(), key=lambda v: v[1]))
     clean_brackets = re.compile(r"\(.*?\)")
-    self.groups = [re.sub(r"\(.*?\)", "", heading.lower()) for heading in headings]
+    self.groups = [heading.lower() for heading in headings]
     self.groups.append("perturb")
     
     self.ions = []
