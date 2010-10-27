@@ -24,7 +24,7 @@ class Cell:
                 line_clean = line.strip()
                 if len(line_clean) > 0:
                     lines.append(line_clean)
-            self.blocks[name] = lines
+            self.blocks[name.upper()] = lines
 
         cell_sans_blocks = block_re.sub("", cell)
         other = re.split("\n\s{0,}", cell_sans_blocks, re.S | re.M)
@@ -40,7 +40,12 @@ class Cell:
 
         self.ions = []
         self.ion_index = {}
-        self.ions_type = 'POSITIONS_ABS'
+	
+	if 'POSITIONS_ABS' in self.blocks:
+	        self.ions_type = 'POSITIONS_ABS'
+	elif 'POSITIONS_FRAC' in self.blocks:
+		self.ions_type = 'POSITIONS_FRAC'
+	
         self.ions_units = ''
         for line in self.blocks[self.ions_type]: # Include positions frac
             lsplit = line.split()
