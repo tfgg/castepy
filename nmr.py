@@ -35,14 +35,19 @@ class NMRResult:
     #self.groups, _ = zip(*sorted(self.entry_regex.groupindex.items(), key=lambda v: v[1]))
     clean_brackets = re.compile(r"\(.*?\)")
     self.groups = [re.sub(r"\(.*?\)", "", heading.lower()) for heading in headings]
+    self.groups.append("perturb")
     
     self.ions = []
     for entry_row in entry_rows:
-      entry_row = entry_row.replace("** ", "")
-      entries = self.entry_regex.findall(entry_row)
+      is_perturb = ""
+      if entry_row.find("|** ") != -1:
+        entry_row = entry_row.replace("|** ", "", 1)
+        is_perturb = "**"
       
+      entries = self.entry_regex.findall(entry_row)
+      entries.append(is_perturb)
       # Stop at a blank line
-      if len(entries) == 0: break
+      if len(entries) == 1: break
 
       self.ions.append(dict(zip(self.groups, entries)))
     
