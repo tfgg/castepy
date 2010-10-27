@@ -250,10 +250,18 @@ class SimpleCalculation:
         self.dir_path = dir_path
         self.seed_name = seed_name
 
+    def has_run(self):
+        if os.path.exists(os.path.join(self.dir_path, self.seed_name + ".castep")):
+	    return True
+        else:
+            return False
+
 class Castep:
     castep_path = "/users2/green/CASTEP-5.5/obj/linux_x86_64_ifort11/castep"
+    sge_command = "qsub"
+    sge_script = "/home/green/test_runs-mpi/run_mpi.sh"
 
-    def __init__(self, castep_path):
+    def __init__(self, castep_path=""):
         self.castep_path = castep_path
     
     def execute(self, calculation):
@@ -265,5 +273,7 @@ class Castep:
         retcode = subprocess.call([self.castep_path, calculation.seed_name], cwd=calculation.dir_path)
 
     def sge_execute(self, calculation):
-        pass
+        import subprocess
+
+	retcode = subprocess.call([self.sge_command, self.sge_script, calculation.seed_name], cwd=calculation.dir_path)
 
