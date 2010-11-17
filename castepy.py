@@ -275,5 +275,5 @@ class Castep:
     def sge_execute(self, calculation, num_nodes=1):
         import subprocess
 
-	retcode = subprocess.call([self.sge_command, self.sge_script, calculation.seed_name, num_nodes*8], cwd=calculation.dir_path)
+	retcode = subprocess.call([self.sge_command, self.sge_script, calculation.seed_name], cwd=calculation.dir_path)
 
