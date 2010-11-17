@@ -69,6 +69,12 @@ class Cell:
                 ion_index[ion[0]] = [ion,]
         return ion_index
 
+    def get_species(self):
+        r = set()
+        for ion in self.ions:
+            r.add(ion[0])
+        return r
+
     def hack_perturb_origin(self):
         """ Hack to move the perturbing NMR nucleus onto the origin """
         j_site = self.otherdict['jcoupling_site'].split()
