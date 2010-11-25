@@ -15,6 +15,8 @@ class Cell:
         import re
         block_re = re.compile(r"%block (.*?)\n(.*?\n{0,})%endblock (.*?)\n", re.I | re.S | re.M)
 
+        # Fix any windows line endings
+        cell = cell.replace("\r\n", "\n")
         blocks = block_re.findall(cell)
         
         for name, content, _ in blocks:
@@ -40,11 +42,13 @@ class Cell:
 
         self.ions = []
         self.ion_index = {}
-	
-	if 'POSITIONS_ABS' in self.blocks:
-	        self.ions_type = 'POSITIONS_ABS'
-	elif 'POSITIONS_FRAC' in self.blocks:
-		self.ions_type = 'POSITIONS_FRAC'
+
+        self.ions_type = 'POSITIONS_FRAC'
+
+        if 'POSITIONS_ABS' in self.blocks:
+	          self.ions_type = 'POSITIONS_ABS'
+        elif 'POSITIONS_FRAC' in self.blocks:
+		        self.ions_type = 'POSITIONS_FRAC'
 	
         self.ions_units = ''
         for line in self.blocks[self.ions_type]: # Include positions frac
@@ -77,7 +81,11 @@ class Cell:
 
     def hack_perturb_origin(self):
         """ Hack to move the perturbing NMR nucleus onto the origin """
-        j_site = self.otherdict['jcoupling_site'].split()
+        if 'jcoupling_site' not in self.otherdict:
+          j_site = raw_input("Specify the j-coupling site: ").split()
+          self.other.append("jcoupling_site: " + " ".join(j_site))
+        else: 
+          j_site = self.otherdict['jcoupling_site'].split()
         
         j_site_ion = self.ion_index[j_site[0]][int(j_site[1])-1]
         
@@ -89,6 +97,29 @@ class Cell:
                                  pos[2]-j_site_ion[1][2],))
             ions_prime.append(new_ion)
 
+        self.ions = ions_prime
+        self.ion_index = self.make_ion_index()
+
+        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z)) in self.ions]
+
+    def make_unique_ions(self):
+        """ Generate a unique set of the ions, fix duplicates """
+        ions = dict()
+
+        for ion in self.ions:
+          trunc_pos = (round(ion[1][0], 2), round(ion[1][1], 2), round(ion[1][2], 2))
+          if trunc_pos in ions:
+            ions[trunc_pos].append(ion)
+          else:
+            ions[trunc_pos] = [ion]
+
+        ions_prime = []
+        for trunc_pos, ions in sorted(ions.items()):
+          #print trunc_pos, len(ions)
+          ions_prime.append(ions[0])
+
+        #print len(self.ions)
+        #print len(ions_prime)
         self.ions = ions_prime
         self.ion_index = self.make_ion_index()
 
