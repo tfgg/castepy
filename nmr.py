@@ -21,8 +21,8 @@ class NMRResult:
   def parse(self, castep_file):
     search_results = self.nmr_regex.findall(castep_file)
 
-    if search_results is []:
-      raise NoNMRResult()
+    if search_results is [] or len(search_results) == 0:
+      raise self.NoNMRResult()
 
     search_result = search_results[len(search_results) - 1]
 
@@ -64,14 +64,14 @@ class NMRResult:
     
     return prop
 
-  def csv(self, species):
+  def csv(self, species, number=None):
     s = "#" + ", ".join(self.groups) + "\n"
 
     class CExc(Exception): pass
 
     for ion in self.ions:
       try:
-        if species is None or species == ion['species']:
+        if (species is None or species == ion['species']) and (number is None or number==ion['ion']):
             ps = []
             for group in self.groups:
                 if group in ion:
