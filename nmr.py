@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import math
 
 class NMRResult:
   nmr_regex = re.compile(r"  \|\s+Chemical Shielding.*?\n.*?\n(.*?)\n(.*?)\n(.*?)\n\s+\n", re.M | re.S);
@@ -64,21 +65,24 @@ class NMRResult:
     
     return prop
 
-  def csv(self, species, number=None):
+  def csv(self, species, number=None, sortgroup="tot(hz)", limit=10):
     s = "#" + ", ".join(self.groups) + "\n"
 
     class CExc(Exception): pass
 
-    for ion in self.ions:
+    def ion_filter(ion): 
+        return (species is None or species == ion['species']) and (number is None or number==ion['ion'])
+
+    sorted_ions = sorted(self.ions, key=lambda x: abs(float(x[sortgroup])), reverse=True)
+    for ion in filter(ion_filter, sorted_ions)[:limit]:
       try:
-        if (species is None or species == ion['species']) and (number is None or number==ion['ion']):
-            ps = []
-            for group in self.groups:
-                if group in ion:
-                    ps.append(ion[group])
-                else:
-                    raise CExc()
-            s += ", ".join(ps) + "\n"
+        ps = []
+        for group in self.groups:
+          if group in ion:
+            ps.append(ion[group])
+          else:
+            raise CExc()
+        s += ", ".join(ps) + "\n"
       except CExc:
         pass
 
@@ -86,7 +90,10 @@ class NMRResult:
 
 class JNMRResult(NMRResult):
     nmr_regex = re.compile(r"  \|\s+Isotropic J-coupling.*?\n.*?\n(.*?)\n(.*?)\n(.*?)\n\s+\n", re.M | re.S);
-    
+
+class JNMRResultAniso(NMRResult):    
+    nmr_regex = re.compile(r"  \|\s+Anisotropic J-coupling.*?\n.*?\n(.*?)\n(.*?)\n(.*?)\n\s+\n", re.M | re.S);
+ 
 if __name__ == "__main__":
   import os, sys
 
