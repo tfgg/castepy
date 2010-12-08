@@ -79,6 +79,19 @@ class Cell:
             r.add(ion[0])
         return r
 
+    def get_species_count(self):
+        c = {}
+        for ion in self.ions:
+          if ion[0] in c:
+            c[ion[0]] += 1
+          else:
+            c[ion[0]] = 1
+        return c.items()
+
+    def regen_ion_block(self):        
+        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z)) in self.ions]
+        self.ion_index = self.make_ion_index()
+
     def hack_perturb_origin(self):
         """ Hack to move the perturbing NMR nucleus onto the origin """
         if 'jcoupling_site' not in self.otherdict:
@@ -99,8 +112,7 @@ class Cell:
 
         self.ions = ions_prime
         self.ion_index = self.make_ion_index()
-
-        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z)) in self.ions]
+        self.regen_ion_block()
 
     def make_unique_ions(self):
         """ Generate a unique set of the ions, fix duplicates """
@@ -123,8 +135,8 @@ class Cell:
         self.ions = ions_prime
         self.ion_index = self.make_ion_index()
 
-        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z)) in self.ions]
-
+        self.regen_ion_block()
+    
     def __str__(self):
         s  = ""
         for name, lines in self.blocks.items():
