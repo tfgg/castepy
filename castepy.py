@@ -12,6 +12,7 @@ class Cell:
             self.parse_cell(cell_file)
 
     def parse_cell(self, cell):
+        from collections import Counter
         import re
         block_re = re.compile(r"%block (.*?)\n(.*?\n{0,})%endblock (.*?)\n", re.I | re.S | re.M)
 
@@ -51,13 +52,16 @@ class Cell:
 		        self.ions_type = 'POSITIONS_FRAC'
 	
         self.ions_units = ''
+        species_count = Counter()
         for line in self.blocks[self.ions_type]: # Include positions frac
             lsplit = line.split()
 
             if len(lsplit) == 4:
                 species, x, y, z = lsplit
+
+                species_count[species] += 1
                 
-                ion = (species, (float(x), float(y), float(z)))
+                ion = (species, (float(x), float(y), float(z)), species_count[species])
                 self.ions.append(ion)
             elif len(lsplit) == 1:
                 self.ions_units = lsplit[0]
@@ -89,7 +93,7 @@ class Cell:
         return c.items()
 
     def regen_ion_block(self):        
-        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z)) in self.ions]
+        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z), n) in self.ions]
         self.ion_index = self.make_ion_index()
 
     def hack_perturb_origin(self):
@@ -104,10 +108,10 @@ class Cell:
         
         
         ions_prime = []
-        for species, pos in self.ions:
+        for species, pos, n in self.ions:
             new_ion = (species, (pos[0]-j_site_ion[1][0],
                                  pos[1]-j_site_ion[1][1],
-                                 pos[2]-j_site_ion[1][2],))
+                                 pos[2]-j_site_ion[1][2],), n)
             ions_prime.append(new_ion)
 
         self.ions = ions_prime
