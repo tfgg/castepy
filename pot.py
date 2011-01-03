@@ -1,9 +1,12 @@
+#!/home/green/bin/python
 # -*- coding: utf-8 -*-
-#!/usr/bin/python
 # Add required potentials to given cell file. Optionally links files into directory containing cell file
 import os
 import sys
-from castepy import Cell
+try:
+  from castepy.castepy import Cell
+except ImportError:
+  from castepy import Cell
 
 def add_potentials(pot_dir, dir_path, cell_file, link):
   c = Cell(open(cell_file).read())
