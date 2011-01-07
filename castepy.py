@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
+from ion import Ion, Ions, Basis
 
 class Cell:
     def __init__(self, cell_file=None):
         self.blocks = {}
         self.other = []
         self.otherdict = {}
+
+        self.ions = Ions()
 
         if cell_file is not None:
             self.parse_cell(cell_file)
@@ -41,9 +44,32 @@ class Cell:
                 if len(o_split) == 2:
                     self.otherdict[o_split[0]] = o_split[1]
 
-        self.ions = []
-        self.ion_index = {}
+        self.parse_lattice()
+        self.parse_ions()
 
+    def parse_lattice(self):
+        self.lattice_type = None
+        for block_name in self.blocks:
+          if 'LATTICE_' in block_name:
+            self.lattice_type = block_name
+        
+        lattice = []
+        if self.lattice_type == 'LATTICE_CART':
+          for line in self.blocks[self.lattice_type]:
+            lsplit = line.split()
+
+            if len(lsplit) == 3:
+              lattice.append((float(lsplit[0]),
+                              float(lsplit[1]),
+                              float(lsplit[2]),))
+            elif len(lsplit) == 1:
+              self.lattice_units = lsplit[0]
+        else:
+          raise Exception("%s not implemented in parser" % self.lattice_type)
+
+        self.basis = Basis(lattice[0], lattice[1], lattice[2])
+
+    def parse_ions(self):
         self.ions_type = 'POSITIONS_FRAC'
 
         if 'POSITIONS_ABS' in self.blocks:
@@ -52,51 +78,22 @@ class Cell:
 		        self.ions_type = 'POSITIONS_FRAC'
 	
         self.ions_units = ''
-        species_count = Counter()
         for line in self.blocks[self.ions_type]: # Include positions frac
             lsplit = line.split()
 
             if len(lsplit) == 4:
-                species, x, y, z = lsplit
-
-                species_count[species] += 1
-                
-                ion = (species, (float(x), float(y), float(z)), species_count[species])
-                self.ions.append(ion)
+                s, x, y, z = lsplit
+                self.ions.add(Ion(s, (float(x),float(y),float(z))))
             elif len(lsplit) == 1:
                 self.ions_units = lsplit[0]
                 
-        self.ion_index = self.make_ion_index()
-
-    def make_ion_index(self):
-        ion_index = {}
-        for ion in self.ions:
-            if ion[0] in ion_index:
-                ion_index[ion[0]].append(ion)
-            else:
-                ion_index[ion[0]] = [ion,]
-        return ion_index
-
-    def get_species(self):
-        r = set()
-        for ion in self.ions:
-            r.add(ion[0])
-        return r
-
-    def get_species_count(self):
-        c = {}
-        for ion in self.ions:
-          if ion[0] in c:
-            c[ion[0]] += 1
-          else:
-            c[ion[0]] = 1
-        return c.items()
-
     def regen_ion_block(self):        
-        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z), n) in self.ions]
-        self.ion_index = self.make_ion_index()
+        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (s, x, y, z) for (s, (x, y, z), n) in self.ions.ions]
 
-    def hack_perturb_origin(self):
+    def regen_lattice_block(self):
+        self.blocks[self.lattice_type] = [self.lattice_units] + ["%f %f %f" % (a,b,c) for a,b,c in self.basis.basis]
+
+    def jcoupling_shift_origin(self):
         """ Hack to move the perturbing NMR nucleus onto the origin """
         if 'jcoupling_site' not in self.otherdict:
           j_site = raw_input("Specify the j-coupling site: ").split()
@@ -104,19 +101,8 @@ class Cell:
         else: 
           j_site = self.otherdict['jcoupling_site'].split()
         
-        j_site_ion = self.ion_index[j_site[0]][int(j_site[1])-1]
-        
-        
-        ions_prime = []
-        for species, pos, n in self.ions:
-            new_ion = (species, (pos[0]-j_site_ion[1][0],
-                                 pos[1]-j_site_ion[1][1],
-                                 pos[2]-j_site_ion[1][2],), n)
-            ions_prime.append(new_ion)
-
-        self.ions = ions_prime
-        self.ion_index = self.make_ion_index()
-        self.regen_ion_block()
+        j_site_ion = self.ions.get_species(j_site[0], int(j_site[1]))
+        self.ions.translate_origin(j_site_ion.p) 
 
     def make_unique_ions(self):
         """ Generate a unique set of the ions, fix duplicates """
