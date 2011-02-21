@@ -1,16 +1,17 @@
 import math
-import numpy
+from numpy import array, dot, add, subtract
+
 
 class Basis:
   def __init__(self, a, b, c):
     self.basis = [a,b,c]
-    self.matrix = numpy.matrix(self.basis)
-    self.AA = self.matrix.transpose() * self.matrix
+    self.matrix = array(self.basis)
+    self.AA = dot(self.matrix.T, self.matrix)
 
   def cart(self, v):
-    return numpy.dot(self.matrix, v)
+    return dot(self.mat, v)
 
-Basis.cartesian = Basis((1.0,0.0,0.0), (0.1,0.0,0.0), (0.0,0.1,0.0))
+Basis.cartesian = Basis((1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0))
 
 def wrap(x, a, b):
   if x < b and x >= a:
@@ -22,26 +23,27 @@ def wrap(x, a, b):
 
 def least_mirror(a, b, basis=Basis.cartesian):
   ap = a
-  a = numpy.matrix(a).transpose()
-  b = numpy.matrix(b).transpose()
+  a = array(a)
+  b = array(b)
   counter = 0
   min = 0.0
   min_p = None
+
   for i in range(-1,2):
     for j in range(-1,2):
       for k in range(-1,2):
         counter += 1
-        r =  a - b + numpy.matrix((float(i), float(j), float(k))).transpose()
-        d = float(r.transpose() * basis.AA * r)
+        ap = add(a, (float(i), float(j), float(k)))
+        r = subtract(ap, b)
+        d = reduce(dot, [r, basis.AA, r])
 
-        p = (ap[0]+float(i), ap[1]+float(j), ap[2]+float(k))
         if counter == 1:
           min = d
-          min_p = p
+          min_p = ap
         elif counter >= 2:
           if d < min:
-            min =  d
-            min_p = p
+            min = d
+            min_p = ap
 
   return (min, min_p)
 
@@ -57,12 +59,62 @@ class Ion:
 
   def __str__(self):
     return "%s %s at %s" % (self.s, self.i, ", ".join(map(str,self.p)))
+
+  def copy(self):
+    rtn = Ion(str(self.s), tuple(self.p))
+    rtn.i = int(i)
  
 class Ions:
   def __init__(self):
     self.ions = []
     self.species_index = {}
 
+  # Container emulation methods
+  def __getitem__(self, idx):
+    if type(idx) == tuple:
+      s, i = idx
+      return self.get_species(s, i)
+    else:
+      return self.ions[idx]
+
+  def __len__(self):
+    return len(self.ions)
+
+  def __delitem__(self, idx):
+    return self.remove_by_index(idx)
+
+  def __cmp__(self, other):
+    if isinstance(other, Ions):
+      return cmp(self.ions, other.ions)
+    else:
+      return cmp(self.ions, other)
+
+  def __iter__(self):
+    return self.ions.__iter__()
+
+  # Copying methods
+  def copy_subset(self, subset):
+    """
+      Copy a subset of ions into a new Ions structure, updating bonds appropriately.
+    """
+    from copy import copy
+
+    ion_map = {}
+    for ion1 in subset:
+      ion_new = Ion(copy(ion1.s), copy(ion1.p))
+      ion_new.bonds = ion1.bonds
+      self.add(ion_new)
+      ion_map[ion1] = ion_new
+
+    for ion1 in self:
+      if hasattr(ion1, 'bonds'):
+        new_bonds = []
+        for ion2, p, pop, r in ion1.bonds:
+          if ion2 in ion_map:
+            new_bonds.append((ion_map[ion2], p, pop, r))
+        ion1.bonds = new_bonds 
+
+  # Methods to add and remove ions, keeping their internal indices up to date
   def add(self, ion):
     """
       Add an ion to the system.
@@ -76,6 +128,9 @@ class Ions:
       self.species_index[ion.s] = [ion]
 
     ion.i = len(self.species_index[ion.s])
+    ion.idx = len(self.ions)
+
+    return (ion.s, ion.i)
 
   def remove(self, ion):
     """
@@ -98,7 +153,10 @@ class Ions:
     for species, ions in self.species_index.items():
       for i, ion in enumerate(ions):
         ion.i = i+1
+    for idx, ion in enumerate(self.ions):
+      ion.idx = idx + 1
 
+  # Accessors by various indices
   def get_species(self, s, i=None):
     """
       Get all the atoms of a particular species or a particular ion by its species index
@@ -116,6 +174,7 @@ class Ions:
     
     return [(k, len(self.species_index[k])) for k in self.species_index.keys()]
 
+  # Geometric routines
   def closest(self, q):
     """
       Find the ion closest to q, accounting for cyclic coordinates.
@@ -181,22 +240,18 @@ class Ions:
       
       for i2 in range(i1+1, len(self.ions)):
         ion2 = self.ions[i2]
-        d = least_mirror(ion1.p, ion2.p)
+        d2, dp = least_mirror(ion1.p, ion2.p)
       
-        if d < epsilon: 
+        if d2 < epsilon*epsilon: 
           overlap = True
     
       if overlap:
         remove.append(ion1)
 
+
     for ion in remove:
       self.remove(ion)
 
-  def bonds(self, castep_file, max_dist=0.001):
-    import bonds
-
-    bs = bonds.parse_bonds(castep_file)
-    
 if __name__ == "__main__":
   """
     Tests.
@@ -216,5 +271,5 @@ if __name__ == "__main__":
 
   ions.remove_dupes()
 
-  for ion in ions.ions:
+  for ion in ions:
     print ion

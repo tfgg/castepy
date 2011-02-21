@@ -9,7 +9,10 @@ except ImportError:
   from castepy import Cell
 
 def add_potentials(pot_dir, dir_path, cell_file):
-  c = Cell(open(cell_file).read())
+  if cell_file.__class__ != Cell:
+    c = Cell(open(cell_file).read())
+  else:
+    c = cell_file
 
   species_pot_string = "%s %s_POT.ASC.DAT"
   species_pot = []
