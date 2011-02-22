@@ -4,7 +4,7 @@ import os.path
 from ion import Ion, Ions, Basis
 
 class CastepCalc:
-  files = {'cell':'%s.cell',
+  types = {'cell':'%s.cell',
            'param': '%s.param',
            'castep': '%s.castep',
            'magres': '%s.magres',}
@@ -17,7 +17,7 @@ class CastepCalc:
 
     self.files = {}
   
-    for t, file in self.files.items():
+    for t, file in self.types.items():
       file_path = os.path.join(root, file % name)
       if os.path.isfile(file_path):
         try:

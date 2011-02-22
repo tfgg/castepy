@@ -55,7 +55,6 @@ class Magres:
         self.atoms[index]['ms'] = {}
         for tensor in shielding_tensors:
           self.atoms[index]['ms'][tensor[0]] = map(float, tensor[1:])
-          self.atoms[index]['ms_prop'][tensor[0]] = tensor_properties(self.atoms[index]['ms'][tensor[0]])
 
       efg_tensors = efg_tensor_regex.findall(atom[2])
       if len(efg_tensors) != 0:
@@ -63,7 +62,6 @@ class Magres:
         self.atoms[index]['efg'] = {}
         for tensor in efg_tensors:
           self.atoms[index]['efg'][tensor[0]] = map(float, tensor[1:])
-          self.atoms[index]['efg_prop'][tensor[0]] = tensor_properties(self.atoms[index]['efg'][tensor[0]])
 
       jc_tensors = jc_tensor_regex.findall(atom[2])
       if len(jc_tensors) != 0:
@@ -71,7 +69,6 @@ class Magres:
         self.atoms[index]['jc']  = {}
         for tensor in jc_tensors:
           self.atoms[index]['jc'][tensor[0]] = map(float, tensor[1:])
-          self.atoms[index]['jc_prop'][tensor[0]] = tensor_properties(self.atoms[index]['jc'][tensor[0]])
           
 
   def annotate(self, ions):
@@ -107,7 +104,9 @@ class Magres:
       if 'jc' in magres:
         if 'jc' not in ion.magres:
           ion.magres['jc'] = {}
+          ion.magres['jc_prop'] = {}
         ion.magres['jc'][(jc_ion_s, jc_ion_i)] = magres['jc']['Total']
+        ion.magres['jc_prop'][(jc_ion_s, jc_ion_i)] = tensor_properties(magres['jc']['Total'])
 
 class NMRResult:
   nmr_regex = re.compile(r"  \|\s+Chemical Shielding.*?\n.*?\n(.*?)\n(.*?)\n(.*?)\n\s+\n", re.M | re.S);

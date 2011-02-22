@@ -32,7 +32,6 @@ def rgb(r,g,b):
   return 2**16 * r + 2**8 * g + b
 
 def colour(pop):
-  print >> sys.stderr, pop
   return "0x" + ("%02X" % (pop * 255)) *3
 
 def clamp(x, a=0.0, b=1.0):
@@ -111,21 +110,25 @@ if __name__ == "__main__":
   """
   
   c = castepy.Cell(open(sys.argv[1]).read())
+
+  if 'jcoupling_site' in c.otherdict:
+    s,i  = c.otherdict['jcoupling_site'].split()
+    i = int(i)
+    jc_ion = c.ions.get_species(s, i)
+
+    print >>sys.stderr, jc_ion
+    c.ions.translate_origin(jc_ion.p)
+    c.ions.wrap_inside(-0.5, 0.5)
+    print >>sys.stderr, jc_ion
+
   bonds = parse_bonds(open(sys.argv[2]).read())
 
   max_pop = max([pop for _, _, pop, _ in bonds])
   min_pop = 0.5
 
-  n = len(c.ions.ions)
-  bonding_matrix = numpy.zeros((n,n))
-
-  bs = []
   for (s1, i1), (s2, i2), pop, r in bonds:
     ion1 = c.ions.get_species(s1, i1)
     ion2 = c.ions.get_species(s2, i2)
-
-    bonding_matrix[ion1.idx-1][ion2.idx-1] = abs(pop)
-    bonding_matrix[ion2.idx-1][ion1.idx-1] = abs(pop)
 
     if ion1.p[2] < -1.0/6 or ion1.p[2] > 1.0/6:
       #continue
@@ -134,9 +137,3 @@ if __name__ == "__main__":
     d2, p = ion.least_mirror(ion2.p, ion1.p)
     if pop > 0.2:
       print " ".join(map(str, ion1.p)), " ".join(map(str, p)), colour(clamp((pop-min_pop)/(max_pop-min_pop)))
-
-  eval, evec = numpy.linalg.eig(bonding_matrix)
-  print >> sys.stderr, eval[0]
-  for idx,f in sorted(enumerate(evec[0]), key=lambda (idx,f): f):
-    ion = c.ions.ions[idx]
-    print >> sys.stderr, str(ion), f
