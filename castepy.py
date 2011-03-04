@@ -1,30 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
-from ion import Ion, Ions, Basis
-
-class CastepCalc:
-  types = {'cell':'%s.cell',
-           'param': '%s.param',
-           'castep': '%s.castep',
-           'magres': '%s.magres',}
-
-  def __init__(self, dir=None, name=None):
-    if dir is None:
-      root = "."
-    else:
-      root = dir
-
-    self.files = {}
-  
-    for t, file in self.types.items():
-      file_path = os.path.join(root, file % name)
-      if os.path.isfile(file_path):
-        try:
-          f = open(file_path)
-          setattr(self, t, f.read())
-        except:
-          pass
+import numpy
+from ion import Ion, Ions
 
 class Cell:
     def __init__(self, cell_file=None):
@@ -93,29 +71,38 @@ class Cell:
         else:
           raise Exception("%s not implemented in parser" % self.lattice_type)
 
-        self.basis = Basis(lattice[0], lattice[1], lattice[2])
+        self.lattice = numpy.array(lattice)
 
     def parse_ions(self):
         self.ions_type = None
 
         if 'POSITIONS_ABS' in self.blocks:
-	          self.ions_type = 'POSITIONS_ABS'
+          self.ions_type = 'POSITIONS_ABS'
+          self.basis = numpy.array([[1.0, 0.0, 0.0],
+                                    [0.0, 1.0, 0.0],
+                                    [0.0, 0.0, 1.0]])
         elif 'POSITIONS_FRAC' in self.blocks:
-		        self.ions_type = 'POSITIONS_FRAC'
+          self.ions_type = 'POSITIONS_FRAC'
+          self.basis = self.lattice
 
         if self.ions_type is None:
           return
 	
         self.ions_units = ''
         for line in self.blocks[self.ions_type]: # Include positions frac
-            lsplit = line.split()
+          lsplit = line.split()
 
-            if len(lsplit) == 4:
-                s, x, y, z = lsplit
-                self.ions.add(Ion(s, (float(x),float(y),float(z))))
-            elif len(lsplit) == 1:
-                self.ions_units = lsplit[0]
-                
+          if len(lsplit) == 4:
+            s, x, y, z = lsplit
+            p = (float(x), float(y), float(z))
+
+            self.ions.add(Ion(s, p))
+          elif len(lsplit) == 1:
+            self.ions_units = lsplit[0]
+
+        self.ions.lattice = self.lattice
+        self.ions.basis = self.basis
+
     def regen_ion_block(self):        
         self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (ion.s, ion.p[0], ion.p[1], ion.p[2]) for ion in self.ions.ions]
 

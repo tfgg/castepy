@@ -2,17 +2,6 @@ import math
 from numpy import array, dot, add, subtract
 
 
-class Basis:
-  def __init__(self, a, b, c):
-    self.basis = [a,b,c]
-    self.matrix = array(self.basis)
-    self.AA = dot(self.matrix.T, self.matrix)
-
-  def cart(self, v):
-    return dot(self.mat, v)
-
-Basis.cartesian = Basis((1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0))
-
 def wrap(x, a, b):
   if x < b and x >= a:
     return x
@@ -21,29 +10,32 @@ def wrap(x, a, b):
   else:
     return x + a - b
 
-def least_mirror(a, b, basis=Basis.cartesian):
+def least_mirror(a, b, basis, lattice):
+  # TOFIX: Fix assumption of fractional coordinates. Also, make sure if lattice is particularly thin in one direction it doesn't mess up.
   ap = a
   a = array(a)
   b = array(b)
-  counter = 0
-  min = 0.0
+  min = None
   min_p = None
 
-  for i in range(-1,2):
-    for j in range(-1,2):
-      for k in range(-1,2):
-        counter += 1
-        ap = add(a, (float(i), float(j), float(k)))
-        r = subtract(ap, b)
-        d = reduce(dot, [r, basis.AA, r])
+  x_mag = math.sqrt(dot(lattice[0], lattice[0]))
+  y_mag = math.sqrt(dot(lattice[0], lattice[0]))
+  z_mag = math.sqrt(dot(lattice[0], basis[0]))
+  max_mag = max(x_mag, y_mag, z_mag)
+  x_repeat = int(math.ceil(x_mag / max_mag))
+  y_repeat = int(math.ceil(y_mag / max_mag))
+  z_repeat = int(math.ceil(z_mag / max_mag))
 
-        if counter == 1:
+  for i in range(-x_repeat,x_repeat+1):
+    for j in range(-y_repeat,y_repeat+1):
+      for k in range(-z_repeat,z_repeat+1):
+        ap = add(a, dot(lattice, (float(i), float(j), float(k))))
+        r = subtract(ap, b)
+        d = reduce(dot, [r, basis.T, basis, r])
+
+        if min is None or d < min:
           min = d
           min_p = ap
-        elif counter >= 2:
-          if d < min:
-            min = d
-            min_p = ap
 
   return (min, min_p)
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import re
 import math
 from castepy import Cell
@@ -9,12 +10,12 @@ def tensor_properties(matrix):
 
   m_sym = (m + m.H)/2.0
   m_asym = (m - m.H)/2.0
-  eval, evec = numpy.linalg.eig(m_sym)
+#  eval, evec = numpy.linalg.eig(m_sym)
 
   prop = {}
-  prop['iso'] = sum(eval)/3.0  
-  prop['aniso'] = eval[2] - (eval[0] + eval[1])/2.0
-  prop['asym'] = (eval[1] - eval[0]) / (eval[2] - prop['iso'])
+  prop['iso'] = numpy.trace(m_sym)/3.0  
+#  prop['aniso'] = eval[2] - (eval[0] + eval[1])/2.0
+# prop['asym'] = (eval[1] - eval[0]) / (eval[2] - prop['iso'])
 
   return prop
 
@@ -27,7 +28,7 @@ class Magres:
     """
       Parse a CASTEP .magres file for total tensors.
     """
-    
+    print >>sys.stderr,"Parsing magres"
     atom_regex = re.compile("============\nAtom: ([A-Za-z]+)\s+([0-9]+)\n============\n([^=]+)\n", re.M | re.S)
     shielding_tensor_regex = re.compile("\s{0,}(.*?) Shielding Tensor\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
 
@@ -37,12 +38,20 @@ class Magres:
 
     atoms = atom_regex.findall(magres_file)
 
+    #shielding_tensors = shielding_tensor_regex.findall(magres_file)
+    #efg_tensors = efg_tensor_regex.findall(magres_file)
+    #jc_tensors = jc_tensor_regex.findall(magres_file)
+    #print >>sys.stderr,shielding_tensors
+    #print >>sys.stderr,efg_tensors
+    #print >>sys.stderr,jc_tensors
+
     self.ms = False
     self.efg = False
     self.jc = False
 
     self.atoms = {}
 
+    print >>sys.stderr,"Building atoms"
     for atom in atoms:
       index = atom[0], int(atom[1])
 
@@ -75,6 +84,7 @@ class Magres:
     """
       Given an ion collection, add the nmr information to each ion object.
     """
+    print >>sys.stderr,"Annotating"
     if self.jc:
       # If doing J-coupling, find the perturbing atom. It should be missing from our magres atoms list.
       # The perturbing atom is actually in the .magres file but the regex doesn't pick it up.

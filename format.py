@@ -1,6 +1,8 @@
-import sys
-from castepy import Cell
-from ion import Ion, Ions
+import os, sys
+import numpy
+from castepy import CastepCalc, Cell
+import bonds
+from ion import Ion, Ions, least_mirror
 from nmr import Magres
 
 def write_vector(v):
@@ -12,10 +14,13 @@ def write_matrix(m):
 def write_cell(cell):
   lines = [] 
 
-  lines.append("lattice %s" % write_matrix(cell.basis.basis))
+  lines.append("lattice %s" % write_matrix(cell.lattice))
 
   for ion in cell.ions:
-    lines.append("atom %s %d %s" % (ion.s, ion.i, write_vector(ion.p)))
+    p = ion.p
+    if cell.ions_type == 'POSITIONS_FRAC':
+      p = numpy.dot(cell.basis, p)
+    lines.append("atom %s %d %s" % (ion.s, ion.i, write_vector(p)))
 
   for ion in cell.ions:
     if hasattr(ion, 'magres') and 'jc' in ion.magres:
@@ -30,10 +35,23 @@ def write_cell(cell):
     if hasattr(ion, 'magres') and 'efg' in ion.magres:
       lines.append("efg %s %d %s" % (ion.s, ion.i, write_vector(ion.magres['efg'])))
 
+  for bond in cell.ions.bonds:
+    (s1, i1), (s2, i2), pop, r = bond
+    p1 = cell.ions.get_species(s1, i1).p
+    p2 = cell.ions.get_species(s2, i2).p
+
+    d2, p2 = least_mirror(p2, p1,cell.basis, cell.lattice)
+
+    if cell.ions_type == 'POSITIONS_FRAC':
+      p1 = numpy.dot(cell.basis, p1)
+      p2 = numpy.dot(cell.basis, p2)
+
+    lines.append("bond %s %d %s %d %s %s" % (s1, i1, s2, i2, write_vector(p1), write_vector(p2)))  
+
   return "\n".join(lines)
 
 def load_magres(magres_file):
-  proc = {'lattice': lambda data: map(float, data),
+  proc = {'lattice': lambda data: numpy.reshape(map(float, data), (3,3)),
           'atom': lambda data: (data[0], int(data[1]), map(float, data[2:])),
           'ms': lambda data: (data[0], int(data[1]), map(float, data[2:])),
           'efg': lambda data: (data[0], int(data[1]), map(float, data[2:])),
@@ -71,6 +89,8 @@ def load_into_ions(data):
     raise Exception("Too many lattice definitions.")
 
   ions = Ions()
+  ions.lattice = data['lattice'][0]
+  ions.basis = [[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]
   for s, i, p in data['atom']:
     ion = Ion(s, p)
     ions.add(ion)
@@ -109,11 +129,21 @@ if __name__ == "__main__":
         print ion.s, ion.i, jc_tensor
 
   elif sys.argv[1] == 'dump':
-    c = Cell(open(sys.argv[2]).read())
+    dir, file = os.path.split(sys.argv[2])
+    name, _ = os.path.splitext(file)
+    
+    calc = CastepCalc(dir, name)
 
-    if len(sys.argv) > 3:
-      
-      m = Magres(open(sys.argv[3]).read())
+    print >>sys.stderr, "Loading cell file"
+    c = Cell(calc.cell)
+
+    if hasattr(calc, 'castep'):
+      print >>sys.stderr, "Loading bonding information"
+      bonds.add_bonds(c.ions, calc.castep)
+
+    if hasattr(calc, 'magres'):
+      print >>sys.stderr, "Loading magres information"
+      m = Magres(calc.magres)
       m.annotate(c.ions)
 
     print write_cell(c)

@@ -52,17 +52,22 @@ def add_bonds(ions, castep_file, pop_tol=0.2, dist_tol=None):
   for ion in ions.ions:
     ion.bonds = []
 
-  for (s1, i1), (s2, i2), pop, r in bonds:
+  # Store all bonds, unduplicated
+  ions.bonds = []
+
+  for bond in bonds:
+    (s1, i1), (s2, i2), pop, r = bond
     if pop_tol is not None and pop < pop_tol:
       continue
     if dist_tol is not None and r < dist_tol:
       continue
+    ions.bonds.append(bond)
     
     ion1 = ions.get_species(s1, i1)
     ion2 = ions.get_species(s2, i2)
 
-    d2, p2 = least_mirror(ion2.p, ion1.p) # Mirror location of ion2 from ion1
-    d2, p1 = least_mirror(ion1.p, ion2.p) # Mirror location of ion1 from ion2
+    d2, p2 = least_mirror(ion2.p, ion1.p, ions.basis, ions.lattice) # Mirror location of ion2 from ion1
+    d2, p1 = least_mirror(ion1.p, ion2.p, ions.basis, ions.lattice) # Mirror location of ion1 from ion2
     
     ion1.bonds.append((ion2, p2, pop, r))
     ion2.bonds.append((ion1, p1, pop, r))
