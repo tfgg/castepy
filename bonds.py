@@ -1,6 +1,5 @@
 import re
 import sys
-import castepy
 import ion
 from ion import least_mirror
 import numpy
@@ -109,36 +108,41 @@ def bond_angle(ion1, ion2):
   bond2 = array(p2) - array(p3)
   return math.acos(dot(bond1, bond2)/math.sqrt(dot(bond1,bond1)*dot(bond2,bond2))) 
 
-if __name__ == "__main__":
-  """
-    Given a .cell file and a .castep file, dump the most likely bonds to a file for plotting
-  """
-  
-  c = castepy.Cell(open(sys.argv[1]).read())
+#if __name__ == "__main__":
+#  """
+#    Given a .cell file and a .castep file, dump the most likely bonds to a file for plotting
+#  """
+#  
+#  dir, file = os.path.split(sys.argv[1])
+#  name, _ = os.path.spltext(file)
+#
+#  calc = CastepCalc(dir, name)
+#  calc.load(include=["cell"])
+#  c = calc.cell
+#   
+#  if 'jcoupling_site' in c.otherdict:
+#    s,i  = c.otherdict['jcoupling_site'].split()
+#    i = int(i)
+#    jc_ion = c.ions.get_species(s, i)
 
-  if 'jcoupling_site' in c.otherdict:
-    s,i  = c.otherdict['jcoupling_site'].split()
-    i = int(i)
-    jc_ion = c.ions.get_species(s, i)
+#    print >>sys.stderr, jc_ion
+#    c.ions.translate_origin(jc_ion.p)
+#    c.ions.wrap_inside(-0.5, 0.5)
+#    print >>sys.stderr, jc_ion
 
-    print >>sys.stderr, jc_ion
-    c.ions.translate_origin(jc_ion.p)
-    c.ions.wrap_inside(-0.5, 0.5)
-    print >>sys.stderr, jc_ion
+#  bonds = parse_bonds(open(sys.argv[2]).read())
 
-  bonds = parse_bonds(open(sys.argv[2]).read())
+#  max_pop = max([pop for _, _, pop, _ in bonds])
+#  min_pop = 0.5
 
-  max_pop = max([pop for _, _, pop, _ in bonds])
-  min_pop = 0.5
+#  for (s1, i1), (s2, i2), pop, r in bonds:
+#    ion1 = c.ions.get_species(s1, i1)
+#    ion2 = c.ions.get_species(s2, i2)
 
-  for (s1, i1), (s2, i2), pop, r in bonds:
-    ion1 = c.ions.get_species(s1, i1)
-    ion2 = c.ions.get_species(s2, i2)
+#    if ion1.p[2] < -1.0/6 or ion1.p[2] > 1.0/6:
+#      #continue
+#      pass
 
-    if ion1.p[2] < -1.0/6 or ion1.p[2] > 1.0/6:
-      #continue
-      pass
-
-    d2, p = ion.least_mirror(ion2.p, ion1.p)
-    if pop > 0.2:
-      print " ".join(map(str, ion1.p)), " ".join(map(str, p)), colour(clamp((pop-min_pop)/(max_pop-min_pop)))
+#    d2, p = ion.least_mirror(ion2.p, ion1.p)
+#    if pop > 0.2:
+#      print " ".join(map(str, ion1.p)), " ".join(map(str, p)), colour(clamp((pop-min_pop)/(max_pop-min_pop)))

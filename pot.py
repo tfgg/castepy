@@ -4,9 +4,9 @@
 import os
 import sys
 try:
-  from castepy.castepy import Cell
+  from castepy.cell import Cell
 except ImportError:
-  from castepy import Cell
+  from cell import Cell
 
 def add_potentials(pot_dir, dir_path, cell_file):
   if cell_file.__class__ != Cell:

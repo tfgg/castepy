@@ -232,7 +232,7 @@ class Ions:
       
       for i2 in range(i1+1, len(self.ions)):
         ion2 = self.ions[i2]
-        d2, dp = least_mirror(ion1.p, ion2.p)
+        d2, dp = least_mirror(ion1.p, ion2.p, self.basis, self.lattice)
       
         if d2 < epsilon*epsilon: 
           overlap = True

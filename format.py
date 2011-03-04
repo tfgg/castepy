@@ -1,6 +1,7 @@
 import os, sys
 import numpy
-from castepy import CastepCalc, Cell
+from cell import Cell
+from calc import CastepCalc
 import bonds
 from ion import Ion, Ions, least_mirror
 from nmr import Magres
@@ -133,17 +134,9 @@ if __name__ == "__main__":
     name, _ = os.path.splitext(file)
     
     calc = CastepCalc(dir, name)
-
+    
     print >>sys.stderr, "Loading cell file"
-    c = Cell(calc.cell)
-
-    if hasattr(calc, 'castep'):
-      print >>sys.stderr, "Loading bonding information"
-      bonds.add_bonds(c.ions, calc.castep)
-
-    if hasattr(calc, 'magres'):
-      print >>sys.stderr, "Loading magres information"
-      m = Magres(calc.magres)
-      m.annotate(c.ions)
+    calc.load()
+    c = calc.cell
 
     print write_cell(c)

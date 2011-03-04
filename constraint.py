@@ -1,7 +1,7 @@
 try:
-  from castepy.castepy import Cell
+  from castepy.cell import Cell
 except ImportError:
-  from castepy import Cell
+  from cell import Cell
 
 def add_constraints(c, filter):
   constraints = []

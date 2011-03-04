@@ -1,6 +1,7 @@
 import os, sys
 
-from castepy import Cell, Parameters
+from castepy import Parameters
+from cell import Cell
 from nmr import Magres
 import bonds
 
@@ -27,16 +28,29 @@ class CastepCalc:
         except:
           pass
 
-  def load(self):
-    if hasattr(self, 'cell_file'):
+  def load(self, include=None, exclude=None):
+    if include is None:
+      include = set(["cell", "params", "magres", "bonds"])
+    else:
+      include = set(include)
+
+    if exclude is None:
+      exclude = set()
+    else:
+      exclude = set(exclude)
+
+    to_load = include - exclude
+
+    if hasattr(self, 'cell_file') and "cell" in to_load:
       self.cell = Cell(self.cell_file)
 
-    if hasattr(self, 'param_file'):
+    if hasattr(self, 'param_file') and "params" in to_load:
       self.param = Parameters(self.param_file)
 
-    if hasattr(self, 'magres_file'):
-      self.magres = Magres(self.castep_file)
+    if hasattr(self, 'magres_file') and "magres" in to_load:
+      self.magres = Magres(self.magres_file)
+      self.magres.annotate(self.cell.ions)
 
-    if hasattr(self, 'castep_file'):
+    if hasattr(self, 'castep_file') and "bonds" in to_load:
       bonds.add_bonds(self.cell.ions, self.castep_file)
 
