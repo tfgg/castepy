@@ -21,7 +21,7 @@ class TestCell(unittest.TestCase):
     self.assertEqual(c.lattice_units, 'ang')
 
     self.assertEqual(len(c.ions), 9)
-    self.assertEqual(len(c.ions.get_species('H')), 6)
+    self.assertEqual(len(c.ions.gEt_species('H')), 6)
     self.assertEqual(len(c.ions.get_species('C')), 2)
     self.assertEqual(len(c.ions.get_species('O')), 1)
 
