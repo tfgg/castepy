@@ -3,6 +3,9 @@ import numpy
 from ion import Ion, Ions
 
 class Cell:
+    class LatticeNotImplemented(Exception): pass
+    class LatticeWrongShape(Exception): pass
+
     def __init__(self, cell_file=None):
         self.blocks = {}
         self.other = []
@@ -68,9 +71,12 @@ class Cell:
             elif len(lsplit) == 1:
               self.lattice_units = lsplit[0]
         else:
-          raise Exception("%s not implemented in parser" % self.lattice_type)
+          raise self.LatticeNotImplemented("%s not implemented in parser" % self.lattice_type)
 
         self.lattice = numpy.array(lattice)
+
+        if self.lattice.shape != (3,3):
+          raise self.LatticeWrongShape("Lattice vectors given not 3x3")
 
     def parse_ions(self):
         self.ions_type = None
@@ -87,7 +93,7 @@ class Cell:
         if self.ions_type is None:
           return
 	
-        self.ions_units = ''
+        self.ions_units = None
         for line in self.blocks[self.ions_type]: # Include positions frac
           lsplit = line.split()
 
@@ -98,6 +104,9 @@ class Cell:
             self.ions.add(Ion(s, p))
           elif len(lsplit) == 1:
             self.ions_units = lsplit[0]
+
+        if self.ions_units is None:
+          self.ions_units = 'ang'
 
         self.ions.lattice = self.lattice
         self.ions.basis = self.basis
