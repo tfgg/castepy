@@ -52,5 +52,8 @@ class CastepCalc:
       self.magres.annotate(self.cell.ions)
 
     if hasattr(self, 'castep_file') and "bonds" in to_load:
-      bonds.add_bonds(self.cell.ions, self.castep_file)
+      try:
+        bonds.add_bonds(self.cell.ions, self.castep_file)
+      except Exception:
+        pass
 
