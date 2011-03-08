@@ -1,0 +1,539 @@
+ +-------------------------------------------------+
+ |                                                 |
+ |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |
+ |     C     A  A  S       T    E      P   P       |
+ |     C     AAAA   SS     T    EEE    PPPP        |
+ |     C     A  A     S    T    E      P           |
+ |      CCC  A  A  SSS     T    EEEEE  P           |
+ |                                                 |
+ +-------------------------------------------------+
+ |                                                 |
+ | Welcome to Academic Release CASTEP version 5.5  |
+ | Ab Initio Total Energy Program                  |
+ |                                                 |
+ | Authors:                                        |
+ | M. Segall, M. Probert, C. Pickard, P. Hasnip,   |
+ | S. Clark, K. Refson, M. Payne                   |
+ |                                                 |
+ | Contributors:                                   |
+ | P. Lindan, P. Haynes, J. White, V. Milman,      |
+ | N. Govind, M. Gibson, P. Tulip, V. Cocula,      |
+ | B. Montanari, D. Quigley, M. Glover,            |
+ | L. Bernasconi, A. Perlov, M. Plummer,           |
+ | E. McNellis, J. Meyer, J. Gale, D. Jochym       |
+ |                                                 |
+ | Copyright (c) 2000 - 2010                       |
+ |                                                 |
+ |     Distributed under the terms of an           |
+ |     Agreement between the United Kingdom        |
+ |     Car-Parrinello (UKCP) Consortium,           |
+ |     Daresbury Laboratory and Accelrys, Inc.     |
+ |                                                 |
+ | Please cite                                     |
+ |                                                 |
+ |     "First principles methods using CASTEP"     |
+ |                                                 |
+ |         Zeitschrift fuer Kristallographie       |
+ |           220(5-6) pp. 567-570 (2005)           |
+ |                                                 |
+ | S. J. Clark, M. D. Segall, C. J. Pickard,       |
+ | P. J. Hasnip, M. J. Probert, K. Refson,         |
+ | M. C. Payne                                     |
+ |                                                 |
+ |       in all publications arising from          |
+ |              your use of CASTEP                 |
+ |                                                 |
+ +-------------------------------------------------+
+ 
+ +-------------------------------------------------+
+ |                                                 |
+ |           N   N    M   M    RRRR                |
+ |           NN  N    MM MM    R   R               |
+ |           N N N    M M M    RRRR                |
+ |           N  NN    M   M    R  R                |
+ |           N   N    M   M    R   R               |
+ |                                                 |
+ +-------------------------------------------------+
+ |                                                 |
+ | Welcome to Materials Studio CASTEP-NMR          |
+ |                                                 |
+ | Authors:                                        |
+ | J. R. Yates, C. J. Pickard, F. Mauri            |
+ |                                                 |
+ | Copyright (c) 2004 - 2010                       |
+ |                                                 |
+ | Please cite the appropriate publications in all |
+ | work arising from your use of CASTEP NMR.       |
+ |                                                 |
+ | For NMR Shielding Tensors cite:                 |
+ |    "All-electron magnetic response with         |
+ |    pseudopotentials: NMR chemical shifts",      |
+ |    C. J. Pickard, F. Mauri;                     |
+ |    Physical Review B63 245101 (2001), and       |
+ |                                                 |
+ |    "Calculation of NMR Chemical Shifts          |
+ |    for extended systems using                   |
+ |    Ultrasoft Pseudopotentials",                 |
+ |    J. R. Yates, C. J. Pickard and F. Mauri      |
+ |    Physical Review B76 024401 (2007)            |
+ |                                                 |
+ | For Electric Field Gradients cite:              |
+ |  "Accurate First Principles Prediction of 17O   |
+ |   NMR Parameters in SiO2: Assignment of the     |
+ |   Zeolite Ferrierite Spectrum"                  |
+ |  M. Profeta, F. Mauri and C. J. Pickard         |
+ |  J. Amer. Chem. Soc. 125 541 (2003)             |
+ |                                                 |
+ +-------------------------------------------------+
+ 
+ 
+ Atomic calculation performed for H: 1s1
+ 
+ Converged in 41 iterations to an ae energy of -12.488 eV
+ 
+   ============================================================                
+   | Pseudopotential Report - Date of generation 11-10-2010   |                
+   ------------------------------------------------------------                
+   | Element: H Ionic charge:  1.00 Level of theory: PBE      |                
+   |                                                          |                
+   |               Reference Electronic Structure             |                
+   |         Orbital         Occupation         Energy        |                
+   |            1s              1.000           -0.239        |                
+   |                                                          |                
+   |                 Pseudopotential Definition               |                
+   |        Beta     l      e      Rc     scheme   norm       |                
+   |          1      0   -0.239   0.803     qc      0         |                
+   |          2      0    0.250   0.803     qc      0         |                
+   |         loc     1    0.000   0.803     pn      0         |                
+   |                                                          |                
+   | Augmentation charge Rinner = 0.599                       |                
+   | No partial core correction                               |                
+   ------------------------------------------------------------                
+   | "1|0.8|0.8|0.6|2|6|8|10(qc=6)"                           |                
+   ------------------------------------------------------------                
+   |      Author: Chris J. Pickard, Cambridge University      |                
+   ============================================================                
+ 
+ Atomic calculation performed for C: 1s2 2s2 2p2
+ 
+ Converged in 54 iterations to an ae energy of -1027.632 eV
+ 
+   ============================================================                
+   | Pseudopotential Report - Date of generation 11-10-2010   |                
+   ------------------------------------------------------------                
+   | Element: C Ionic charge:  4.00 Level of theory: PBE      |                
+   |                                                          |                
+   |               Reference Electronic Structure             |                
+   |         Orbital         Occupation         Energy        |                
+   |            2s              2.000           -0.505        |                
+   |            2p              2.000           -0.194        |                
+   |                                                          |                
+   |                 Pseudopotential Definition               |                
+   |        Beta     l      e      Rc     scheme   norm       |                
+   |          1      0   -0.505   1.395     qc      0         |                
+   |          2      0    0.250   1.395     qc      0         |                
+   |          3      1   -0.194   1.395     qc      0         |                
+   |          4      1    0.250   1.395     qc      0         |                
+   |         loc     2    0.000   1.395     pn      0         |                
+   |                                                          |                
+   | Augmentation charge Rinner = 1.305                       |                
+   | Partial core correction Rc = 1.305                       |                
+   ------------------------------------------------------------                
+   | "2|1.4|1.4|1.3|6|10|12|20:21(qc=6)"                      |                
+   ------------------------------------------------------------                
+   |      Author: Chris J. Pickard, Cambridge University      |                
+   ============================================================                
+ 
+ Atomic calculation performed for O: 1s2 2s2 2p4
+ 
+ Converged in 61 iterations to an ae energy of -2040.902 eV
+ 
+   ============================================================                
+   | Pseudopotential Report - Date of generation 11-10-2010   |                
+   ------------------------------------------------------------                
+   | Element: O Ionic charge:  6.00 Level of theory: PBE      |                
+   |                                                          |                
+   |               Reference Electronic Structure             |                
+   |         Orbital         Occupation         Energy        |                
+   |            2s              2.000           -0.881        |                
+   |            2p              4.000           -0.332        |                
+   |                                                          |                
+   |                 Pseudopotential Definition               |                
+   |        Beta     l      e      Rc     scheme   norm       |                
+   |          1      0   -0.881   1.300     qc      0         |                
+   |          2      0    0.250   1.300     qc      0         |                
+   |          3      1   -0.332   1.300     qc      0         |                
+   |          4      1    0.250   1.300     qc      0         |                
+   |         loc     2    0.000   1.004     pn      0         |                
+   |                                                          |                
+   | Augmentation charge Rinner = 0.701                       |                
+   | Partial core correction Rc = 0.701                       |                
+   ------------------------------------------------------------                
+   | "2|1.0|1.3|0.7|13|16|18|20:21(qc=7)"                     |                
+   ------------------------------------------------------------                
+   |      Author: Chris J. Pickard, Cambridge University      |                
+   ============================================================                
+ 
+ Pseudo atomic calculation performed for H 1s1
+ 
+ Converged in 18 iterations to a total energy of -12.4840 eV
+ 
+ 
+ Pseudo atomic calculation performed for C 2s2 2p2
+ 
+ Converged in 24 iterations to a total energy of -146.3566 eV
+ 
+ 
+ Pseudo atomic calculation performed for O 2s2 2p4
+ 
+ Converged in 34 iterations to a total energy of -433.8114 eV
+ 
+Calculation parallelised over    1 nodes.
+K-points are distributed over    1 groups, each containing    1 nodes.
+
+ ************************************ Title ************************************
+ 
+
+ ***************************** General Parameters ******************************
+  
+ output verbosity                               : normal  (1)
+ write checkpoint data to                       : ethanol.check
+ type of calculation                            : Magnetic Resonance
+ stress calculation                             : off
+ density difference calculation                 : off
+ electron localisation func (ELF) calculation   : off
+ Hirshfeld analysis                             : off
+ unlimited duration calculation
+ timing information                             : on
+ memory usage estimate                          : on
+ write final potential to formatted file        : off
+ write final density to formatted file          : off
+  
+ output         length unit                     : A
+ output           mass unit                     : amu
+ output           time unit                     : ps
+ output         charge unit                     : e
+ output         energy unit                     : eV
+ output          force unit                     : eV/A
+ output       velocity unit                     : A/ps
+ output       pressure unit                     : GPa
+ output     inv_length unit                     : 1/A
+ output      frequency unit                     : cm-1
+ output force constant unit                     : eV/A**2
+ output         volume unit                     : A**3
+ output   IR intensity unit                     : (D/A)**2/amu
+ output         dipole unit                     : D
+ output         efield unit                     : eV/A/e
+ output        entropy unit                     : J/mol/K
+  
+ wavefunctions paging                           : none
+ data distribution                              : optimal for this architecture
+ optimization strategy                          : maximize speed(+++)
+
+ *********************** Exchange-Correlation Parameters ***********************
+  
+ using functional                               : Perdew Burke Ernzerhof
+ Divergence correction                          : off
+ DFT+D: Semi-empirical dispersion correction    : off
+
+ ************************* Pseudopotential Parameters **************************
+  
+ pseudopotential representation                 : reciprocal space
+ <beta|phi> representation                      : reciprocal space
+
+ **************************** Basis Set Parameters *****************************
+  
+ plane wave basis set cut-off                   :   680.2846   eV
+ finite basis set correction                    : none
+
+ **************************** Electronic Parameters ****************************
+  
+ number of  electrons                           :  20.00    
+ net charge of system                           :  0.000    
+ net spin   of system                           :  0.000    
+ number of  up  spins                           :  10.00    
+ number of down spins                           :  10.00    
+ treating system as non-spin-polarized
+ number of bands                                :         10
+
+ ********************* Electronic Minimization Parameters **********************
+  
+ Method: Treating system as non-metallic,
+         and number of  SD  steps               :          1
+         and number of  CG  steps               :          4
+  
+ total energy / atom convergence tol.           : 0.1000E-07   eV
+ max force / atom convergence tol.              : ignored
+ convergence tolerance window                   :          3   cycles
+ max. number of SCF cycles                      :         30
+ periodically dump wavefunctions to             : ethanol.wvfn
+ dump wavefunctions every                       :          5   SCF cycles
+
+ *********************** Population Analysis Parameters ************************
+  
+ Population analysis with cutoff                :  3.000       A
+
+ ************************ Magnetic Resonance Parameters ************************
+  
+ Magnetic Resonance Property                    : Chemical Shielding
+ Position Operator Method                       : crystal
+ max. number of MagRes CG steps                 :        250
+ convergence tolerance window                   :          2   cycles
+ energy convergence tolerance                   : 0.1000E-11   eV
+ band convergence tolerance                     : 0.1000E-08   eV
+
+ *******************************************************************************
+  
+ 
+                           -------------------------------
+                                      Unit Cell
+                           -------------------------------
+        Real Lattice(A)                      Reciprocal Lattice(1/A)
+   6.0000000   0.0000000   0.0000000        1.0471976   0.0000000   0.0000000
+   0.0000000   6.0000000   0.0000000        0.0000000   1.0471976   0.0000000
+   0.0000000   0.0000000   6.0000000        0.0000000   0.0000000   1.0471976
+ 
+                       Lattice parameters(A)       Cell Angles
+                    a =    6.000000          alpha =   90.000000
+                    b =    6.000000          beta  =   90.000000
+                    c =    6.000000          gamma =   90.000000
+ 
+                       Current cell volume =  216.000000       A**3
+ 
+                           -------------------------------
+                                     Cell Contents
+                           -------------------------------
+                         Total number of ions in cell =    9
+                      Total number of species in cell =    3
+                        Max number of any one species =    6
+ 
+            xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            x  Element    Atom        Fractional coordinates of atoms  x
+            x            Number           u          v          w      x
+            x----------------------------------------------------------x
+            x  H            1         0.663433   0.696390   0.549180   x
+            x  H            2         0.838899   0.571738   0.750793   x
+            x  H            3         0.953178   0.758709   0.552559   x
+            x  H            4         0.620039   0.888251   0.918318   x
+            x  H            5         0.735362   1.072262   0.719500   x
+            x  H            6         0.985268   0.838714   1.040367   x
+            x  C            1         0.807823   0.725105   0.656856   x
+            x  C            2         0.767171   0.919790   0.813755   x
+            x  O            1         0.957709   0.968784   0.947850   x
+            xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
+ 
+                         No user defined ionic velocities
+ 
+                           -------------------------------
+                                   Details of Species
+                           -------------------------------
+ 
+                               Mass of species in AMU
+                                    H    1.0079400
+                                    C   12.0107000
+                                    O   15.9994000
+ 
+                          Electric Quadrupole Moment (Barn)
+                                    H    0.0028600 Isotope  2
+                                    C    0.0332700 Isotope 11
+                                    O   -0.0255800 Isotope 17
+ 
+                          Files used for pseudopotentials:
+                                    H Pseudopotential generated on-the-fly
+                                    C Pseudopotential generated on-the-fly
+                                    O Pseudopotential generated on-the-fly
+ 
+                           -------------------------------
+                              k-Points For BZ Sampling
+                           -------------------------------
+                         Number of kpoints used =           1
+ 
+             +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+             +  Number       Fractional coordinates        Weight  +
+             +-----------------------------------------------------+
+             +     1   0.250000   0.250000   0.250000   1.0000000  +
+             +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+                           -------------------------------
+                               Symmetry and Constraints
+                           -------------------------------
+ 
+         There are no symmetry operations specified or generated for this cell
+                      Number of ionic constraints     =           3
+                      Maximum deviation from symmetry =  0.00000         ANG
+               Point group of crystal =     1: C1, 1, 1
+ 
+                          Centre of mass is constrained
+             Set iprint > 1 for details of linear ionic constraints
+ 
+                         Number of cell constraints= 0
+                         Cell constraints are:  1 2 3 4 5 6
+ 
+                         External pressure/stress (GPa)
+                          0.00000   0.00000   0.00000
+                                    0.00000   0.00000
+                                              0.00000
+  
++---------------- MEMORY AND SCRATCH DISK ESTIMATES PER NODE -----------------+
+|                                                     Memory          Disk    |
+| Model and support data                               93.0 MB         0.0 MB |
+| Electronic energy minimisation requirements          14.5 MB         0.0 MB |
+|                                               ----------------------------- |
+| Approx. total storage required per node             107.4 MB         0.0 MB |
+|                                                                             |
+| Requirements will fluctuate during execution and may exceed these estimates |
++-----------------------------------------------------------------------------+
+------------------------------------------------------------------------ <-- SCF
+SCF loop      Energy                           Energy gain       Timer   <-- SCF
+                                               per atom          (sec)   <-- SCF
+------------------------------------------------------------------------ <-- SCF
+Initial   1.00761485E+003                                          7.84  <-- SCF
+      1  -8.17149009E+002                    2.02751540E+002      10.53  <-- SCF
+      2  -8.48391226E+002                    3.47135744E+000      13.91  <-- SCF
+      3  -8.48475449E+002                    9.35812198E-003      16.38  <-- SCF
+      4  -8.48475695E+002                    2.73695390E-005      18.82  <-- SCF
+      5  -8.48475696E+002                    1.26562298E-007      21.44  <-- SCF
+      6  -8.48475696E+002                    7.52490944E-010      24.17  <-- SCF
+      7  -8.48475696E+002                    5.73600599E-012      28.45  <-- SCF
+------------------------------------------------------------------------ <-- SCF
+ 
+Final energy =  -848.4756960926     eV
+(energy not corrected for finite basis set)
+ 
+ 
+Writing model to ethanol.check
+ 
+  =====================================================================
+  +       Calculation of Nuclear Magnetic Resonance Parameters        +
+  + ================================================================= +
+ 
+  Starting Calculation of Chemical Shielding Tensors              |<-- NMR
+  +---------------- MEMORY AND SCRATCH DISK ESTIMATES PER NODE -----------------+
+  |                                                     Memory          Disk    |
+  | Model and support data                               91.6 MB         0.0 MB |
+  | NMR chemical shift calculation requirements          26.6 MB         0.0 MB |
+  |                                               ----------------------------- |
+  | Approx. total storage required per node             118.2 MB         0.0 MB |
+  |                                                                             |
+  | Requirements will fluctuate during execution and may exceed these estimates |
+  +-----------------------------------------------------------------------------+
+  Starting k-point:   1 of   1                                    |<-- NMR
+  Total Time for step 1 of 6:                      6.30 sec       |<-- NMR
+  Total Time for step 2 of 6:                      5.71 sec       |<-- NMR
+  Total Time for step 3 of 6:                      5.67 sec       |<-- NMR
+  Total Time for step 4 of 6:                      5.65 sec       |<-- NMR
+  Total Time for step 5 of 6:                      5.99 sec       |<-- NMR
+  Total Time for step 6 of 6:                      6.05 sec       |<-- NMR
+  Total Time for Chemical Shielding Tensors       50.30 sec       |<-- NMR
+ 
+  ===============================================================
+  |                  Chemical Shielding Tensor                  |
+  |-------------------------------------------------------------|
+  |     Nucleus                       Shielding tensor          |
+  |  Species       Ion            Iso(ppm)   Aniso(ppm)  Asym   |
+  |    H           1               29.56       8.96      0.14   |
+  |    H           2               30.22       8.17      0.20   |
+  |    H           3               30.07       7.22      0.06   |
+  |    H           4               26.95       8.15      0.94   |
+  |    H           5               27.37      -7.13      0.92   |
+  |    H           6               31.89      14.12      0.46   |
+  |    C           1              156.05      34.03      0.71   |
+  |    C           2              109.30      70.50      0.41   |
+  |    O           1              267.05     -51.72      0.96   |
+  ===============================================================
+ 
+ *********************** Forces ***********************
+ *                                                    *
+ *            Cartesian components (eV/A)             *
+ * -------------------------------------------------- *
+ *                   x            y            z      *
+ *                                                    *
+ * H         1     -0.15013     -0.02447     -0.10400 *
+ * H         2      0.03141     -0.16918      0.06901 *
+ * H         3      0.16372      0.01475     -0.14735 *
+ * H         4     -0.15201     -0.01358      0.10765 *
+ * H         5     -0.07091      0.18801     -0.12977 *
+ * H         6      0.08277     -0.02950      0.07797 *
+ * C         1     -0.04836      0.12250      0.12522 *
+ * C         2      0.07254     -0.13823     -0.14024 *
+ * O         1      0.07096      0.04972      0.14151 *
+ *                                                    *
+ ******************************************************
+ 
+ Pseudo atomic calculation performed for H 1s1
+ 
+ Converged in 18 iterations to a total energy of -12.4840 eV
+ 
+ 
+ Pseudo atomic calculation performed for C 2s2 2p2
+ 
+ Converged in 24 iterations to a total energy of -146.3566 eV
+ 
+ 
+ Pseudo atomic calculation performed for O 2s2 2p4
+ 
+ Converged in 34 iterations to a total energy of -433.8114 eV
+ 
+Charge spilling parameter for spin component 1 = 1.65%
+ 
+     Atomic Populations (Mulliken)
+     -----------------------------
+Species   Ion     s      p      d      f     Total  Charge (e)
+==============================================================
+  H        1     0.73   0.00   0.00   0.00   0.73     0.27
+  H        2     0.74   0.00   0.00   0.00   0.74     0.26
+  H        3     0.73   0.00   0.00   0.00   0.73     0.27
+  H        4     0.73   0.00   0.00   0.00   0.73     0.27
+  H        5     0.70   0.00   0.00   0.00   0.70     0.30
+  H        6     0.48   0.00   0.00   0.00   0.48     0.52
+  C        1     1.41   3.42   0.00   0.00   4.83    -0.83
+  C        2     1.28   3.01   0.00   0.00   4.29    -0.29
+  O        1     1.83   4.95   0.00   0.00   6.78    -0.78
+==============================================================
+ 
+     Bond                     Population      Length (A)
+============================================================
+   H 006 --    O 001               0.53        0.97187
+   H 003 --    C 001               0.80        1.09219
+   H 005 --    C 002               0.82        1.09232
+   H 001 --    C 001               0.78        1.09436
+   H 002 --    C 001               0.81        1.09508
+   H 004 --    C 002               0.81        1.09942
+   C 002 --    O 001               0.49        1.42854
+   C 001 --    C 002               0.64        1.51993
+   H 004 --    H 005              -0.14        1.76657
+   H 001 --    H 002              -0.10        1.76948
+   H 002 --    H 003              -0.11        1.77295
+   H 001 --    H 003              -0.09        1.77834
+   H 006 --    C 002              -0.18        1.94878
+   H 005 --    O 001              -0.12        2.01058
+   H 004 --    O 001              -0.11        2.09037
+   H 003 --    C 002              -0.13        2.15307
+   H 005 --    C 001              -0.15        2.16077
+   H 004 --    C 001              -0.16        2.16534
+   H 002 --    C 002              -0.13        2.16540
+   H 001 --    C 002              -0.11        2.16889
+   H 004 --    H 006              -0.04        2.32953
+   C 001 --    O 001              -0.14        2.44843
+   H 003 --    H 005              -0.04        2.50013
+   H 001 --    H 004              -0.02        2.50967
+   H 001 --    H 005              -0.02        2.51329
+   H 002 --    H 004              -0.04        2.51817
+   H 002 --    H 006               0.00        2.52109
+   H 006 --    C 001              -0.04        2.62547
+   H 003 --    O 001              -0.01        2.68601
+   H 002 --    O 001              -0.01        2.75342
+   H 005 --    H 006               0.04        2.81395
+   H 003 --    H 006              -0.01        2.97219
+============================================================
+ 
+ 
+Writing model to ethanol.check
+ 
+Writing analysis data to ethanol.castep_bin
+Initialisation time =      6.44 s
+Calculation time    =     74.05 s
+Finalisation time   =      0.91 s
+Total time          =     81.40 s
+Peak Memory Use     = 213544 kB

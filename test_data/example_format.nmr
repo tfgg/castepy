@@ -1,0 +1,27 @@
+lattice 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0
+# Species X Y Z
+atom Al 1 [position vector]
+atom Al 2 [position vector]
+atom Al 3 [position vector]
+atom Si 1 [position vector]
+# Chemical shift
+cs Al 1 [rank-2 tensor]
+cs Al 2 [rank-2 tensor]
+cs Al 3 [rank-2 tensor]
+cs Si 1 [rank-2 tensor]
+# Quadrupolar
+efg Al 1 [rank-2 tensor]
+efg Al 2 [rank-2 tensor]
+efg Al 3 [rank-2 tensor]
+efg Si 1 [rank-2 tensor]
+# J-coupling
+jc Al 1 Al 2 [rank-2 tensor]
+jc Al 1 Al 3 [rank-2 tensor]
+jc Al 1 Si 4 [rank-2 tensor]
+# Bonds (example extended information)
+bond Al 1 Al 2 [separation vector] [bond population]
+bond Al 2 Al 3 [separation vector] [bond population]
+bond Al 3 Si 1 [separation vector] [bond population]
+bond Si 1 Al 1 [separation vector] [bond population]
+name Al 1 T1
+
