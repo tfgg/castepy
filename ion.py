@@ -12,26 +12,18 @@ def wrap(x, a, b):
 
 def least_mirror(a, b, basis, lattice):
   # TOFIX: Fix assumption of fractional coordinates. Also, make sure if lattice is particularly thin in one direction it doesn't mess up.
-  ap = a
-  a = array(a)
-  b = array(b)
+  ap = dot(basis.T, a)
+  a = dot(basis.T,array(a))
+  b = dot(basis.T,array(b))
   min = None
   min_p = None
 
-  x_mag = math.sqrt(dot(lattice[0], lattice[0]))
-  y_mag = math.sqrt(dot(lattice[0], lattice[0]))
-  z_mag = math.sqrt(dot(lattice[0], basis[0]))
-  max_mag = max(x_mag, y_mag, z_mag)
-  x_repeat = int(math.ceil(x_mag / max_mag))
-  y_repeat = int(math.ceil(y_mag / max_mag))
-  z_repeat = int(math.ceil(z_mag / max_mag))
-
-  for i in range(-x_repeat,x_repeat+1):
-    for j in range(-y_repeat,y_repeat+1):
-      for k in range(-z_repeat,z_repeat+1):
-        ap = add(a, dot(lattice, (float(i), float(j), float(k))))
+  for i in range(-1,2):
+    for j in range(-1,2):
+      for k in range(-1,2):
+        ap = add(a, dot(lattice.T, (float(i), float(j), float(k))))
         r = subtract(ap, b)
-        d = reduce(dot, [r, basis.T, basis, r])
+        d = dot(r, r)
 
         if min is None or d < min:
           min = d
@@ -186,7 +178,7 @@ class Ions:
 
     return (min_ion, math.sqrt(min_d2), min_p)
 
-  def neighbours(self, q, max_dist=None, above_index=0):
+  def neighbours(self, q, max_dist=None, above_index=0, species=None):
     """
       Return neighbours of q in distance order, for easy slicing
     """
@@ -194,13 +186,13 @@ class Ions:
     ions = []
     for i in range(above_index, len(self.ions)):
       ion = self.ions[i]
-      d2, p = least_mirror(ion.p, q)
+      d2, p = least_mirror(ion.p, q, self.basis, self.lattice)
 
-      if max_dist is None or d2 < max_dist**2:
+      if (max_dist is None or d2 < max_dist**2) and (species is None or ion.s in species):
         ions.append((ion, math.sqrt(d2), p))
     
-#    return sorted(ions, key=lambda (ion,d,p): d)
-    return ions
+    return sorted(ions, key=lambda (ion,d,p): d)
+#    return ions
 
   def translate_origin(self, p):
     """
@@ -233,6 +225,9 @@ class Ions:
       for i2 in range(i1+1, len(self.ions)):
         ion2 = self.ions[i2]
         d2, dp = least_mirror(ion1.p, ion2.p, self.basis, self.lattice)
+        
+        if d2 < epsilon*epsilon and ion1.s == ion2.s:
+          print math.sqrt(d2), ion1, ion2
       
         if d2 < epsilon*epsilon: 
           overlap = True

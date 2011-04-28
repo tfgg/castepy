@@ -4,6 +4,7 @@ import re
 import math
 from cell import Cell
 import numpy
+from constants import gamma_common
 
 def tensor_properties(matrix):
   m = numpy.mat(numpy.reshape(matrix, (3,3)))
@@ -113,8 +114,11 @@ class Magres:
       
       if 'jc' in magres:
         if 'jc' not in ion.magres:
+          ion.magres['isc'] = {}
           ion.magres['jc'] = {}
           ion.magres['jc_prop'] = {}
-        ion.magres['jc'][(jc_ion_s, jc_ion_i)] = magres['jc']['Total']
-        ion.magres['jc_prop'][(jc_ion_s, jc_ion_i)] = tensor_properties(magres['jc']['Total'])
+        J_tensor = [x * gamma_common[s] * gamma_common[jc_ion_s] * 1.05457148e-15 / (2.0 * math.pi) for x in magres['jc']['Total']]
+        ion.magres['isc'][(jc_ion_s, jc_ion_i)] = magres['jc']['Total']
+        ion.magres['jc'][(jc_ion_s, jc_ion_i)] = J_tensor
+        ion.magres['jc_prop'][(jc_ion_s, jc_ion_i)] = tensor_properties(J_tensor)
 

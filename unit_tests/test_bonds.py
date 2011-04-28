@@ -25,7 +25,6 @@ class TestBonds(unittest.TestCase):
     for H_ion in c.ions.get_species('H'):
       self.assertEqual(len(H_ion.bonds), 1)
 
-
 if __name__ == "__main__":
   unittest.main()
 

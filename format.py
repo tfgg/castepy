@@ -7,7 +7,7 @@ from ion import Ion, Ions, least_mirror
 from nmr import Magres
 
 def write_vector(v):
-  return " ".join(map(str, v))
+  return " ".join([" " % x for x in v])
 
 def write_matrix(m):
   return " ".join([" ".join(map(str,t)) for t in m])
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     for ion in ions: 
       if hasattr(ion, 'magres') and 'ms' in ion.magres:
-        print ion.s, ion.i, ion.magres['ms']
+        print ion.s, ion.i, ion.p, numpy.trace(numpy.reshape(ion.magres['ms'],(3,3)))/3.0
       if hasattr(ion, 'magres') and 'jc' in ion.magres:
         jc_tensor = ion.magres['jc'].items()[0][1]
         print ion.s, ion.i, jc_tensor

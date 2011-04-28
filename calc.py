@@ -3,6 +3,8 @@ import os, sys
 from castepy import Parameters
 from cell import Cell
 from nmr import Magres
+
+import energy
 import bonds
 
 class CastepCalc:
@@ -30,7 +32,7 @@ class CastepCalc:
 
   def load(self, include=None, exclude=None):
     if include is None:
-      include = set(["cell", "params", "magres", "bonds"])
+      include = set(["cell", "params", "magres", "bonds", "energy"])
     else:
       include = set(include)
 
@@ -57,3 +59,8 @@ class CastepCalc:
       except Exception:
         pass
 
+    if hasattr(self, 'castep_file') and "energy" in to_load:
+      try:
+        self.energy = energy.parse(self.castep_file)
+      except energy.CantFindEnergy:
+        self.energy = None

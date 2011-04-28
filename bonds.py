@@ -99,13 +99,17 @@ def find_common(ion1, ion2):
 
   return set.intersection(bonded1,bonded2)
 
-def bond_angle(ion1, ion2):
+def bond_angle(ion1, ion2, ions):
   common = find_common(ion1, ion2).pop()
   p1 = ion1.p
-  _, p2 = least_mirror(common.p, p1)
-  _, p3 = least_mirror(ion2.p, p2)
+  _, p2 = least_mirror(common.p, p1, ions.basis, ions.lattice)
+  _, p3 = least_mirror(ion2.p, p2, ions.basis, ions.lattice)
+
   bond1 = array(p2) - array(p1)
   bond2 = array(p2) - array(p3)
+
+  print math.sqrt(dot(bond1, bond1)), math.sqrt(dot(bond2, bond2))
+
   return math.acos(dot(bond1, bond2)/math.sqrt(dot(bond1,bond1)*dot(bond2,bond2))) 
 
 #if __name__ == "__main__":

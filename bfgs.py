@@ -11,7 +11,7 @@ def read_castep_file(castep_file):
   curr = []
   steps = [curr]
   for step_part in bfgs_step_parts:
-    if len(curr) == 3:
+    if step_part[0] == 'dE/ion' and len(curr)!=0:
       curr = []
       steps.append(curr)
     step = {'param': step_part[0],

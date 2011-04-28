@@ -18,11 +18,14 @@ class Parameters:
 
     def parse_params(self, params):
         import re
-        split_re = re.compile("\s+[=:]\s+")
+        split_re = re.compile("\s{0,}[=:]\s{0,}")
+        comments_re = re.compile("![^\n]+")
+
         plines = params.split("\n")
 
         params = {}
         for pline in plines:
+            pline = comments_re.sub("", pline)
             nv = split_re.split(pline)
             
             if len(nv) == 2:
