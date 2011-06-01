@@ -55,7 +55,9 @@ def load_magres(magres_file):
   proc = {'lattice': lambda data: numpy.reshape(map(float, data), (3,3)),
           'atom': lambda data: (data[0], int(data[1]), map(float, data[2:])),
           'ms': lambda data: (data[0], int(data[1]), map(float, data[2:])),
-          'efg': lambda data: (data[0], int(data[1]), map(float, data[2:])),
+          'efg': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
+          'efg_local': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
+          'efg_nonlocal': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
           'jc': lambda data: (data[0], int(data[1]), data[2], int(data[3]), map(float, data[4:])),}
   
   def clean(s):
@@ -106,7 +108,15 @@ def load_into_ions(data):
       if 'jc' not in ion.magres:
         ion.magres['jc'] = {}
       ion.magres['jc'][(s1, i1)] = m
- 
+   
+  if 'efg' in data:
+    for s1, i1, s2, i2, m in data['efg']:
+      ion = ions.get_species(s2, i2)
+
+      if 'efg' not in ion.magres:
+        ion.magres['efg'] = {}
+      ion.magres['efg'][(s1, i1)] = m
+
   if 'ms' in data:
     for s, i, m in data['ms']:
       ion = ions.get_species(s, i)
@@ -125,6 +135,8 @@ if __name__ == "__main__":
     for ion in ions: 
       if hasattr(ion, 'magres') and 'ms' in ion.magres:
         print ion.s, ion.i, ion.p, numpy.trace(numpy.reshape(ion.magres['ms'],(3,3)))/3.0
+      if hasattr(ion, 'magres') and 'efg' in ion.magres:
+        print ion.s, ion.i, ion.p, numpy.trace(numpy.reshape(ion.magres['efg'],(3,3)))/3.0
       if hasattr(ion, 'magres') and 'jc' in ion.magres:
         jc_tensor = ion.magres['jc'].items()[0][1]
         print ion.s, ion.i, jc_tensor

@@ -101,7 +101,7 @@ gamma={('H', 1): 26.7522128e7,
        ('Lu', 175): 3.0552e7,
        ('Lu', 176): 2.1684e7,
        ('Hf', 177): 1.086e7,
-       ('Hf', 179): -0.6821e7,
+       ('Hf', 179): -0.6821,
        ('Ta', 181): 3.2438e7,
        ('W', 183): 1.1282403e7,
        ('Re', 185): 6.1057e7,
@@ -191,10 +191,8 @@ gamma_iso = {'H': 1,
 
 gamma_common = {}
 for s, i in gamma_iso.items():
-  try:
-    gamma_common[s] = gamma[(s,i)]
-  except:
-    pass
+  if (s,i) in gamma:
+   gamma_common[s] = gamma[(s,i)]
 
 # Quadrupole moments of all nuclear isotopes, from P. Pyykko, J. Mol. Phys, 2008 106 1965-1974
 # Units Q/10/fm^2
