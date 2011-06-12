@@ -5,6 +5,8 @@ from calc import CastepCalc
 import bonds
 from ion import Ion, Ions, least_mirror
 from nmr import Magres
+import constants
+import math
 
 def write_vector(v):
   return " ".join([" " % x for x in v])
@@ -54,11 +56,11 @@ def write_cell(cell):
 def load_magres(magres_file):
   proc = {'lattice': lambda data: numpy.reshape(map(float, data), (3,3)),
           'atom': lambda data: (data[0], int(data[1]), map(float, data[2:])),
-          'ms': lambda data: (data[0], int(data[1]), map(float, data[2:])),
+          'ms': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
           'efg': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
           'efg_local': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
           'efg_nonlocal': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
-          'jc': lambda data: (data[0], int(data[1]), data[2], int(data[3]), map(float, data[4:])),}
+          'isc': lambda data: (data[0], int(data[1]), data[2], int(data[3]), numpy.mat(numpy.reshape(map(float, data[4:]), (3,3)))),}
   
   def clean(s):
     c = s.find('#')
@@ -87,6 +89,26 @@ def load_magres(magres_file):
 
   return d
 
+def load_into_dict(data):
+  atoms = {}
+  for s,i,pos in data['atom']:
+    atoms[(s,i)] = {}
+
+  if 'efg' in data:
+    for s,i,efg_tensor in data['efg']:
+      atoms[(s,i)]['efg'] = (efg_tensor + efg_tensor.H)/2.0
+
+  if 'ms' in data:
+    for s,i,ms_tensor in data['ms']:
+      atoms[(s,i)]['ms'] = (ms_tensor + ms_tensor.H)/2.0
+
+  if 'isc' in data:
+    for s1,i1,s2,i2,K_tensor in data['isc']:
+      atoms[(s1,i1,s2,i2)] = {}
+      atoms[(s1,i1,s2,i2)]['jc'] = (K_tensor + K_tensor.H)/2.0 * constants.gamma_common[s1] * constants.gamma_common[s2] * 1.05457148e-15 / (2*math.pi)
+
+  return atoms 
+
 def load_into_ions(data):
   if len(data['lattice']) > 1:
     raise Exception("Too many lattice definitions.")
@@ -110,9 +132,8 @@ def load_into_ions(data):
       ion.magres['jc'][(s1, i1)] = m
    
   if 'efg' in data:
-    for s1, i1, s2, i2, m in data['efg']:
-      ion = ions.get_species(s2, i2)
-
+    for s, i, m in data['efg']:
+      ion = ions.get_species(s, i)
       if 'efg' not in ion.magres:
         ion.magres['efg'] = {}
       ion.magres['efg'][(s1, i1)] = m

@@ -1,4 +1,16 @@
 import re
+import math
+
+# CODATA2006
+
+planck_si = 6.62606896e-34
+elementary_charge_si = 1.602176487e-19
+electron_mass_si = 9.10938215e-31
+proton_mass_si = 1.672621637e-27
+electron_gyromagnetic_ratio_si = 1.76085977e11
+avogadro_si = 6.02214179e23
+
+hbar_si = planck_si / (2.0 * math.pi)
 
 # Nuclear gyromagnetic ratios, from constants.f90, source IUPAC Recommendations 2001, Robin K. Harris et al
 gamma={('H', 1): 26.7522128e7,
