@@ -5,17 +5,11 @@
 #$ -V
 #$ -l qname=parallel.q
 
-module load intel/ics-2011
-module load ofed/openmpi/intel/1.4.3
-
+source /home/green/pylib/castepy/templates/cluster_local.csh
 source /opt/gridengine/default/common/settings.csh
 
 echo Job using the following number of cores: $NSLOTS
 echo Job starting on: `date`
-
-#echo $TMPDIR/machines
-#cat $TMPDIR/machines
-ls $TMPDIR
 
 mpirun -np $NSLOTS castep %(seedname)s
 
