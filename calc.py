@@ -23,6 +23,7 @@ class CastepCalc:
   
     for t, file in self.types.items():
       file_path = os.path.join(root, file % name)
+      print file_path
       if os.path.isfile(file_path):
         try:
           f = open(file_path)

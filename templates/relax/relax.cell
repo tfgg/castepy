@@ -1,0 +1,4 @@
+kpoint_mp_spacing 0.06
+fix_all_cell true
+fix_com false
+

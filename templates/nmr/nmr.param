@@ -1,0 +1,17 @@
+xcfunctional = PBE 
+opt_strategy : speed
+task        = magres
+magres_task = efg
+cut_off_energy  = 50 ry
+
+bs_max_cg_steps : 5
+max_scf_cycles :      1000
+metals_method : dm
+mixing_scheme : Pulay
+mix_charge_amp :        0.500000000000000
+mix_spin_amp :        2.000000000000000
+mix_charge_gmax :        1.500000000000000
+mix_spin_gmax :        1.500000000000000
+mix_history_length :       20
+smearing_width :        0.100000000000000
+

@@ -1,0 +1,16 @@
+task: geometryoptimisation
+opt_strategy: speed    !HPC
+geom_max_iter: 200
+geom_disp_tol: 5.000000000000000e-004
+page_wvfns: 0   !HPC
+!continuation: default !if you need to rerun
+geom_stress_tol: 0.020000000000000
+max_scf_cycles: 100
+fix_occupancy: true
+smearing_width: 0.00100000000000000
+geom_energy_tol: 5.000000000000000e-006
+grid_scale: 2.0
+geom_force_tol: 0.010000000000000
+xc_functional: PBE
+cut_off_energy: 50 ry
+
