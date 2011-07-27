@@ -1,11 +1,9 @@
 import os, sys
 import numpy
 from cell import Cell
-from calc import CastepCalc
 import bonds
 from ion import Ion, Ions, least_mirror
-from nmr import Magres
-import constants
+from magres_constants import efg_to_Cq, K_to_J, val_to_Cq, largest_eval
 import math
 
 def write_vector(v):
@@ -60,7 +58,8 @@ def load_magres(magres_file):
           'efg': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
           'efg_local': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
           'efg_nonlocal': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
-          'isc': lambda data: (data[0], int(data[1]), data[2], int(data[3]), numpy.mat(numpy.reshape(map(float, data[4:]), (3,3)))),}
+          'isc': lambda data: (data[0], int(data[1]), data[2], int(data[3]), numpy.mat(numpy.reshape(map(float, data[4:]), (3,3)))),
+          'label': lambda data: (data[0], int(data[1]), data[2]),}
   
   def clean(s):
     c = s.find('#')
@@ -96,7 +95,18 @@ def load_into_dict(data):
 
   if 'efg' in data:
     for s,i,efg_tensor in data['efg']:
-      atoms[(s,i)]['efg'] = (efg_tensor + efg_tensor.H)/2.0
+      atoms[(s,i)]['efg'] = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
+      atoms[(s,i)]['Cq'] = largest_eval(atoms[(s,i)]['efg'])
+
+  if 'efg_local' in data:
+    for s,i,efg_tensor in data['efg_local']:
+      atoms[(s,i)]['efg_local'] = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
+      atoms[(s,i)]['Cq_local'] = largest_eval(atoms[(s,i)]['efg_local'])
+
+  if 'efg_nonlocal' in data:
+    for s,i,efg_tensor in data['efg_nonlocal']:
+      atoms[(s,i)]['efg_nonlocal'] = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
+      atoms[(s,i)]['Cq_nonlocal'] = largest_eval(atoms[(s,i)]['efg_nonlocal'])
 
   if 'ms' in data:
     for s,i,ms_tensor in data['ms']:
@@ -105,7 +115,11 @@ def load_into_dict(data):
   if 'isc' in data:
     for s1,i1,s2,i2,K_tensor in data['isc']:
       atoms[(s1,i1,s2,i2)] = {}
-      atoms[(s1,i1,s2,i2)]['jc'] = (K_tensor + K_tensor.H)/2.0 * constants.gamma_common[s1] * constants.gamma_common[s2] * 1.05457148e-15 / (2*math.pi)
+      atoms[(s1,i1,s2,i2)]['jc'] = K_to_J(K_tensor, s1, s2)
+
+  if 'label' in data:
+    for s, i, label in data['label']:
+      atoms[(s,i)].site = label
 
   return atoms 
 
@@ -163,6 +177,8 @@ if __name__ == "__main__":
         print ion.s, ion.i, jc_tensor
 
   elif sys.argv[1] == 'dump':
+    from calc import CastepCalc
+    
     dir, file = os.path.split(sys.argv[2])
     name, _ = os.path.splitext(file)
     

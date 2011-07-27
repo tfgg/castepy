@@ -2,9 +2,11 @@
 import sys
 import re
 import math
-from cell import Cell
 import numpy
-from constants import gamma_common
+
+from cell import Cell
+import format
+from magres_constants import gamma_common
 
 def tensor_properties(matrix):
   m = numpy.mat(numpy.reshape(matrix, (3,3)))
@@ -19,6 +21,34 @@ def tensor_properties(matrix):
 # prop['asym'] = (eval[1] - eval[0]) / (eval[2] - prop['iso'])
 
   return prop
+
+class NewMagres:
+  def __init__(self, magres_file=None):
+    """
+      Load new .magres format file into dictionary structure.
+    """
+
+    self.data = format.load_magres(magres_file) 
+    self.atoms = format.load_into_dict(data)
+
+  def annotate(self, ions):
+    """
+      Given the corresponding ions structure, annotate.
+    """
+    for (s, i) in self.atoms.items():
+      ion = ions.get_species(s, i)
+
+      ion.magres = self.atoms[(s,i)]
+
+      #if 'jc' in magres:
+      #  if 'jc' not in ion.magres:
+      #    ion.magres['isc'] = {}
+      #    ion.magres['jc'] = {}
+      #    ion.magres['jc_prop'] = {}
+      #  J_tensor = [x * gamma_common[s] * gamma_common[jc_ion_s] * 1.05457148e-15 / (2.0 * math.pi) for x in magres['jc']['Total']]
+      #  ion.magres['isc'][(jc_ion_s, jc_ion_i)] = magres['jc']['Total']
+      #  ion.magres['jc'][(jc_ion_s, jc_ion_i)] = J_tensor
+      #  ion.magres['jc_prop'][(jc_ion_s, jc_ion_i)] = tensor_properties(J_tensor)
 
 class Magres:
   def __init__(self, magres_file=None):

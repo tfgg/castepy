@@ -17,6 +17,8 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
   _, required_files= pot.add_potentials(pot_dir, None, c)
   pot.link_files(required_files, target_dir)
 
+  c.other = []
+
   if jc_s is not None:
     jc_ion = c.ions.get_species(jc_s, jc_i)
   

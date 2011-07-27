@@ -7,7 +7,7 @@ from castepy import cell
 from castepy import calc
 from castepy.util import calc_from_path
 
-relax_path = "/home/green/scratch/templates/relax"
+relax_path = "/home/green/pylib/castepy/templates/relax"
 merge_cell = cell.Cell(open(os.path.join(relax_path, "relax.cell")).read())
 
 def make(source_dir, source_name, target_dir, relax_species=["H"]):

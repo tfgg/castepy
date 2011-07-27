@@ -1,7 +1,7 @@
 #!/bin/tcsh
 #$ -cwd
 #$ -j y
-#$ -pe orte 64
+#$ -pe orte 32
 #$ -V
 #$ -l qname=parallel.q
 

@@ -13,7 +13,7 @@ class CastepCalc:
            'castep': '%s.castep',
            'magres': '%s.magres',}
 
-  def __init__(self, dir=None, name=None):
+  def __init__(self, dir=None, name=None, include=None, exclude=None):
     if dir is None:
       root = "."
     else:
@@ -23,13 +23,15 @@ class CastepCalc:
   
     for t, file in self.types.items():
       file_path = os.path.join(root, file % name)
-      print file_path
       if os.path.isfile(file_path):
         try:
           f = open(file_path)
           setattr(self, "%s_file" % t, f.read())
         except:
           pass
+
+    if include is not None:
+      self.load(include, exclude)
 
   def load(self, include=None, exclude=None):
     if include is None:
@@ -48,7 +50,7 @@ class CastepCalc:
       self.cell = Cell(self.cell_file)
 
     if hasattr(self, 'param_file') and "params" in to_load:
-      self.param = Parameters(self.param_file)
+      self.params = Parameters(self.param_file)
 
     if hasattr(self, 'magres_file') and "magres" in to_load:
       self.magres = Magres(self.magres_file)
