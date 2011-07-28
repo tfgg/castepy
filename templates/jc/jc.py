@@ -1,12 +1,14 @@
 import sys, os
 import shutil
 
+import castepy.settings as settings
 from castepy import castepy, pot, cell
 from castepy.calc import CastepCalc
 from castepy.util import calc_from_path
 
 pot_dir = "/home/green/scratch/ncp_pspot/"
-jc_path = "/home/green/pylib/castepy/templates/jc"
+
+jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
 merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
 
@@ -40,7 +42,7 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
 
   shutil.copyfile(os.path.join(jc_path, "jc.param"), param_target)
 
-  sh_context = {'seedname': target_name,}
+  sh_context = {'seedname': target_name, 'CASTEPY_ROOT': settings.CASTEPY_ROOT,}
   sh_source = open(os.path.join(jc_path, "jc.sh")).read()
   sh_target_file = open(sh_target, "w+")
   print >>sh_target_file, sh_source % sh_context

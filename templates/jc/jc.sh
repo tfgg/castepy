@@ -5,7 +5,7 @@
 #$ -V
 #$ -l qname=parallel.q
 
-source /home/green/pylib/castepy/templates/cluster_local.csh
+source %(CASTEPY_ROOT)s/templates/cluster_local.csh
 source /opt/gridengine/default/common/settings.csh
 
 echo Job using the following number of cores: $NSLOTS
