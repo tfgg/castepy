@@ -17,7 +17,6 @@ class Cell:
             self.parse_cell(cell_file)
 
     def parse_cell(self, cell):
-        from collections import Counter
         block_re = re.compile(r"%block (.*?)\n(.*?\n{0,})%endblock (.*?)\n", re.I | re.S | re.M)
 
         # Fix any windows line endings
