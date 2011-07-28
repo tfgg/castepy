@@ -2,11 +2,9 @@ import sys, os
 import shutil
 
 import castepy.settings as settings
-from castepy import castepy, pot, cell
+from castepy import castepy, cell
 from castepy.calc import CastepCalc
 from castepy.util import calc_from_path
-
-pot_dir = "/home/green/scratch/ncp_pspot/"
 
 jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
@@ -16,7 +14,7 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
   calc = CastepCalc(source_dir, source_name)
   c = cell.Cell(calc.cell_file)
 
-  _, required_files= pot.add_potentials(pot_dir, None, c)
+  _, required_files= pot.add_potentials(settings.NCP_POSPOT_DIR, None, c)
   pot.link_files(required_files, target_dir)
 
   c.other = []
@@ -42,7 +40,9 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
 
   shutil.copyfile(os.path.join(jc_path, "jc.param"), param_target)
 
-  sh_context = {'seedname': target_name, 'CASTEPY_ROOT': settings.CASTEPY_ROOT,}
+  sh_context = {'seedname': target_name,
+                'CASTEPY_ROOT': settings.CASTEPY_ROOT,
+                'USER_EMAIL': settings.USER_EMAIL,}
   sh_source = open(os.path.join(jc_path, "jc.sh")).read()
   sh_target_file = open(sh_target, "w+")
   print >>sh_target_file, sh_source % sh_context
