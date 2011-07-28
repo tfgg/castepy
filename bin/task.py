@@ -3,12 +3,16 @@
 import os, sys
 from castepy.cell import Cell
 from castepy.util import calc_from_path
+import castepy.settings as settings
 
-tasks = {'jc': '/home/green/pylib/castepy/templates/jc/jc.py',
-         'relax-H': '/home/green/pylib/castepy/templates/relax/relax.py',
-         'relax-full': '/home/green/pylib/castepy/templates/relax/relax-full.py',
-         'copy': '/home/green/pylib/castepy/templates/copy/copy.py',
-         'nmr': '/home/green/pylib/castepy/templates/nmr/nmr.py',}
+def path(s):
+  return os.path.join(settings.CASTEPY_ROOT, s)
+
+tasks = {'jc': path('templates/jc/jc.py'),
+         'relax-H': path('templates/relax/relax.py'),
+         'relax-full': path('templates/relax/relax-full.py'),
+         'copy': path('templates/copy/copy.py'),
+         'nmr': path('templates/nmr/nmr.py'),}
 
 if __name__ == "__main__":
   if len(sys.argv) < 2:
@@ -29,3 +33,4 @@ if __name__ == "__main__":
   m = __import__(module_name)
 
   m.make(source_dir, source_name, target_dir)
+
