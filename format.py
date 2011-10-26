@@ -93,6 +93,9 @@ def load_into_dict(data):
   for s,i,pos in data['atom']:
     atoms[(s,i)] = {}
 
+  if "lattice" in data:
+    atoms["lattice"] = data["lattice"]
+
   if 'efg' in data:
     for s,i,efg_tensor in data['efg']:
       atoms[(s,i)]['efg'] = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
@@ -116,6 +119,15 @@ def load_into_dict(data):
     for s1,i1,s2,i2,K_tensor in data['isc']:
       atoms[(s1,i1,s2,i2)] = {}
       atoms[(s1,i1,s2,i2)]['jc'] = K_to_J(K_tensor, s1, s2)
+
+      if 'jc' not in atoms[(s1,i1)]:
+        atoms[(s1,i1)]['jc'] = {}
+      
+      if 'jc' not in atoms[(s2,i2)]:
+        atoms[(s2,i2)]['jc'] = {}
+
+      atoms[(s1,i1)]['jc'][(s2,i2)] = atoms[(s1,i1,s2,i2)]['jc']
+      atoms[(s2,i2)]['jc'][(s1,i1)] = atoms[(s1,i1,s2,i2)]['jc']
 
   if 'label' in data:
     for s, i, label in data['label']:

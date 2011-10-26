@@ -7,4 +7,5 @@ rm *.magres
 rm *.check
 rm fort.55
 rm *.cst_esp
+rm *.bib
 

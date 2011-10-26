@@ -5,30 +5,23 @@ from castepy import castepy
 from castepy import constraint
 from castepy import cell
 from castepy import calc
-from castepy.util import calc_from_path
+from castepy.util import calc_from_path, path
 
-relax_path = "/home/green/pylib/castepy/templates/relax"
-merge_cell = cell.Cell(open(os.path.join(relax_path, "relax.cell")).read())
+relax_path = path("templates/spectral")
+merge_cell = cell.Cell(open(os.path.join(relax_path, "spectral.cell")).read())
 
-def make(source_dir, source_name, target_dir, relax_species=["H"]):
+def make(source_dir, source_name, target_dir):
   cal = calc.CastepCalc(source_dir, source_name)
   c = cell.Cell(cal.cell_file)
-  if relax_species is None:
-    filter = lambda ion: False
-  else:
-    filter = lambda ion: ion.s not in relax_species
 
-  c.ions.remove_dupes(epsilon=0.1) # Remove duplicate atoms closer than 0.1 angstrom
-  constraint.add_constraints(c, filter)
-  
   c.other += merge_cell.other
 
   target_cell = os.path.join(target_dir, "%s.cell" % source_name)
   target_param = os.path.join(target_dir, "%s.param" % source_name)
   target_sh = os.path.join(target_dir, "%s.sh" % source_name)
 
-  shutil.copyfile(os.path.join(relax_path, "relax.param"), target_param)
-  shutil.copyfile(os.path.join(relax_path, "relax.sh"), target_sh)
+  shutil.copyfile(os.path.join(relax_path, "spectral.param"), target_param)
+  shutil.copyfile(os.path.join(relax_path, "spectral.sh"), target_sh)
 
   cell_out = open(target_cell, "w+")
 

@@ -7,6 +7,16 @@ from nmr import Magres
 import energy
 import bonds
 
+def calcs_on_path(dir):
+  from util import find_all_calcs, calc_from_path
+
+  calcs = []
+
+  for dir, name in map(calc_from_path, find_all_calcs(dir)):
+    calcs.append(CastepCalc(dir, name))
+
+  return calcs
+
 class CastepCalc:
   types = {'cell':'%s.cell',
            'param': '%s.param',
@@ -18,6 +28,9 @@ class CastepCalc:
       root = "."
     else:
       root = dir
+
+    self.dir = dir
+    self.name = name
 
     self.files = {}
   

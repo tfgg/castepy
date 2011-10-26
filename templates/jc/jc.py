@@ -2,7 +2,7 @@ import sys, os
 import shutil
 
 import castepy.settings as settings
-from castepy import castepy, cell
+from castepy import castepy, cell, pot
 from castepy.calc import CastepCalc
 from castepy.util import calc_from_path
 
@@ -14,7 +14,7 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
   calc = CastepCalc(source_dir, source_name)
   c = cell.Cell(calc.cell_file)
 
-  _, required_files= pot.add_potentials(settings.NCP_POSPOT_DIR, None, c)
+  _, required_files= pot.add_potentials(settings.NCP_PSPOT_DIR, None, c)
   pot.link_files(required_files, target_dir)
 
   c.other = []

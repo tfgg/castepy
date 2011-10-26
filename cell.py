@@ -1,6 +1,7 @@
 import re
 import numpy
-from ion import Ion, Ions
+import math
+from ion import Ion, Ions, least_mirror
 
 class Cell:
     class LatticeNotImplemented(Exception): pass
@@ -166,7 +167,43 @@ class Cell:
         self.ion_index = self.make_ion_index()
 
         self.regen_ion_block()
+   
+    # Geometric routines
+    def closest(self, q):
+      """
+        Find the ion closest to q, accounting for cyclic coordinates.
+      """
+
+      min_d2 = None
+      min_ion = None
+      min_p = None
+     
+      for ion in self.ions:
+        d2,p = least_mirror(ion.p, q, self.basis, self.lattice)
+
+        if min_d2 is None or d2 < min_d2:
+          min_d2 = d2
+          min_ion = ion
+          min_p = p
+
+      return (min_ion, math.sqrt(min_d2), min_p)
+
+    def neighbours(self, q, max_dist=None, above_index=0, species=None):
+      """
+        Return neighbours of q in distance order, for easy slicing
+      """
     
+      ions = []
+      for i in range(above_index, len(self.ions)):
+        ion = self.ions[i]
+
+        d2, p = least_mirror(ion.p, q, self.basis, self.lattice)
+
+        if (max_dist is None or d2 < max_dist**2) and (species is None or ion.s in species):
+          ions.append((ion, math.sqrt(d2), p))
+    
+      return sorted(ions, key=lambda (ion,d,p): d)
+
     def __str__(self):
         self.regen_ion_block()
         self.regen_lattice_block()

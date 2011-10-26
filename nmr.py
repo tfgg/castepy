@@ -6,7 +6,7 @@ import numpy
 
 from cell import Cell
 import format
-from magres_constants import gamma_common
+from magres_constants import gamma_common, efg_to_Cq
 
 def tensor_properties(matrix):
   m = numpy.mat(numpy.reshape(matrix, (3,3)))
@@ -29,7 +29,7 @@ class NewMagres:
     """
 
     self.data = format.load_magres(magres_file) 
-    self.atoms = format.load_into_dict(data)
+    self.atoms = format.load_into_dict(self.data)
 
   def annotate(self, ions):
     """
@@ -131,6 +131,8 @@ class Magres:
           jc_ion_s = ion.s
           jc_ion_i = ion.i
 
+      self.jc_ion = (jc_ion_s, jc_ion_i)
+
     for (s, i), magres in self.atoms.items():
       ion = ions.get_species(s, i)
 
@@ -141,7 +143,8 @@ class Magres:
 
       if 'efg' in magres:
         ion.magres['efg'] = magres['efg']['TOTAL']
-      
+        ion.magres['Cq'] = efg_to_Cq(magres['efg']['TOTAL'], ion.s)
+
       if 'jc' in magres:
         if 'jc' not in ion.magres:
           ion.magres['isc'] = {}

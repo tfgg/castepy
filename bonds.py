@@ -108,7 +108,7 @@ def bond_angle(ion1, ion2, ions):
   bond1 = array(p2) - array(p1)
   bond2 = array(p2) - array(p3)
 
-  print math.sqrt(dot(bond1, bond1)), math.sqrt(dot(bond2, bond2))
+  # print math.sqrt(dot(bond1, bond1)), math.sqrt(dot(bond2, bond2))
 
   return math.acos(dot(bond1, bond2)/math.sqrt(dot(bond1,bond1)*dot(bond2,bond2))) 
 
