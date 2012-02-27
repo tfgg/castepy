@@ -2,17 +2,27 @@
 
 import os, sys
 from castepy.cell import Cell
-from castepy.util import calc_from_path
+from castepy.util import calc_from_path, path
 import castepy.settings as settings
-
-def path(s):
-  return os.path.join(settings.CASTEPY_ROOT, s)
 
 tasks = {'jc': path('templates/jc/jc.py'),
          'relax-H': path('templates/relax/relax.py'),
          'relax-full': path('templates/relax/relax-full.py'),
          'copy': path('templates/copy/copy.py'),
-         'nmr': path('templates/nmr/nmr.py'),}
+         'nmr': path('templates/nmr/nmr.py'),
+         'spectral': path('templates/spectral/spectral.py'),
+         'python': path('templates/python/python.py'),}
+
+def make_task(task, source_dir, source_name, target_dir):
+  module_path = tasks[task]
+  module_dir, module_file = os.path.split(module_path)
+  module_name, _ = os.path.splitext(module_file)
+
+  sys.path.append(module_dir)
+  
+  m = __import__(module_name)
+
+  m.make(source_dir, source_name, target_dir)
 
 if __name__ == "__main__":
   if len(sys.argv) < 2:
@@ -24,13 +34,5 @@ if __name__ == "__main__":
   source_dir, source_name = calc_from_path(source_path)
   target_dir = str(sys.argv[3])
 
-  module_path = tasks[task]
-  module_dir, module_file = os.path.split(module_path)
-  module_name, _ = os.path.splitext(module_file)
-
-  sys.path.append(module_dir)
-  
-  m = __import__(module_name)
-
-  m.make(source_dir, source_name, target_dir)
+  make_task(task, source_dir, source_name, target_dir)
 

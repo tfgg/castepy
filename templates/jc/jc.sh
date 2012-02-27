@@ -19,5 +19,5 @@ mpirun -np $NSLOTS castep %(seedname)s
 
 echo Job ended at: `date`
 
-echo "Finished $1 at `date`" | mail -s "[Kittel] MPI job finished: $1" tim.green@materials.ox.ac.uk
+echo "Finished $1 at `date`" | mail -s "JC MPI job finished: $1" %(USER_EMAIL)s
 

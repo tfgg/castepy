@@ -1,4 +1,5 @@
 import os
+import settings
 
 def calc_from_path(path):
   """
@@ -20,3 +21,6 @@ def find_all_calcs(dir):
       calcs += find_all_calcs(path)
   
   return calcs
+
+def path(s):
+  return os.path.join(settings.CASTEPY_ROOT, s)

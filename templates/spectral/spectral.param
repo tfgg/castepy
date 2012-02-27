@@ -1,0 +1,4 @@
+task: spectral
+pdos_calculate_weights: true
+xc_functional: PBE
+cut_off_energy: 50 ry
