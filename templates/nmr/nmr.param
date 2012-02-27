@@ -1,7 +1,7 @@
 xcfunctional = PBE 
 opt_strategy : speed
 task        = magres
-magres_task = efg
+magres_task = nmr
 cut_off_energy  = 50 ry
 
 fix_occupancy: true

@@ -105,6 +105,8 @@ class Cell:
             s, x, y, z = lsplit
             p = (float(x), float(y), float(z))
 
+            s = s.split(":")[0]
+
             if convert:
               p = numpy.dot(self.basis.T, p)
 

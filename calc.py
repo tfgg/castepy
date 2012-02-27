@@ -72,7 +72,7 @@ class CastepCalc:
     if hasattr(self, 'castep_file') and "bonds" in to_load:
       try:
         bonds.add_bonds(self.cell.ions, self.castep_file)
-      except Exception:
+      except:
         pass
 
     if hasattr(self, 'castep_file') and "energy" in to_load:

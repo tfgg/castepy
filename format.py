@@ -90,6 +90,10 @@ def load_magres(magres_file):
 
 def load_into_dict(data):
   atoms = {}
+
+  if "atom" not in data:
+    return atoms
+
   for s,i,pos in data['atom']:
     atoms[(s,i)] = {}
 
@@ -134,6 +138,52 @@ def load_into_dict(data):
       atoms[(s,i)].site = label
 
   return atoms 
+
+def load_into_dict_new(data):
+  atoms = {}
+
+  if "atom" not in data:
+    return atoms
+
+  atoms['atoms'] = {}
+  for s,i,pos in data['atom']:
+    atoms['atoms'][(s,i)] = {}
+
+  if "lattice" in data:
+    atoms["lattice"] = data["lattice"]
+
+  if 'efg' in data:
+    atoms["efg"] = {}
+    for s,i,efg_tensor in data['efg']:
+      efg = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
+      Cq = largest_eval(atoms[(s,i)]['efg'])
+
+      atoms["efg"][(s,i)] = {'efg': efg,
+                             'Cq': Cq,}
+
+  if 'ms' in data:
+    atoms['ms'] = {}
+    for s,i,ms_tensor in data['ms']:
+      atoms['ms'][(s,i)] = (ms_tensor + ms_tensor.H)/2.0
+
+  if 'isc' in data:
+    atoms['jc'] = {}
+    for s1, i1, s2, i2, K_tensor in data['isc']:
+      if (s1,i1) not in atoms['jc']:
+        atoms['jc'][(s1,i1)] = {}
+      
+      if (s2,i2) not in atoms['jc']:
+        atoms['jc'][(s2,i2)] = {}
+
+      atoms['jc'][(s1,i1)][(s2,i2)] = K_to_J(K_tensor, s1, s2)
+      atoms['jc'][(s2,i2)][(s1,i1)] = K_to_J(K_tensor, s1, s2)
+
+  if 'label' in data:
+    atoms['label'] = {}
+    for s, i, label in data['label']:
+      atoms['label'][(s,i)] = label
+
+  return atoms
 
 def load_into_ions(data):
   if len(data['lattice']) > 1:

@@ -10,7 +10,8 @@ tasks = {'jc': path('templates/jc/jc.py'),
          'relax-full': path('templates/relax/relax-full.py'),
          'copy': path('templates/copy/copy.py'),
          'nmr': path('templates/nmr/nmr.py'),
-         'spectral': path('templates/spectral/spectral.py'),}
+         'spectral': path('templates/spectral/spectral.py'),
+         'python': path('templates/python/python.py'),}
 
 def make_task(task, source_dir, source_name, target_dir):
   module_path = tasks[task]

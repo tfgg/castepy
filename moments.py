@@ -3,6 +3,9 @@ import numpy
 
 def dipole(points):
   points = map(numpy.array, points)
+  mean = sum(points) / len(points)
+
+  #points = [p - mean for p in points]
 
   d = len(points[0])
 
@@ -18,6 +21,9 @@ def delta(i,j):
 
 def quadrupole(points):
   points = map(numpy.array, points)
+  mean = sum(points) / len(points)
+  
+  points = [p - mean for p in points]
 
   d = len(points[0])
 

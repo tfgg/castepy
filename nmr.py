@@ -60,7 +60,7 @@ class Magres:
       Parse a CASTEP .magres file for total tensors.
     """
     print >>sys.stderr,"Parsing magres"
-    atom_regex = re.compile("============\nAtom: ([A-Za-z]+)\s+([0-9]+)\n============\n([^=]+)\n", re.M | re.S)
+    atom_regex = re.compile("============\nAtom: ([A-Za-z\:0-9]+)\s+([0-9]+)\n============\n([^=]+)\n", re.M | re.S)
     shielding_tensor_regex = re.compile("\s{0,}(.*?) Shielding Tensor\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
 
     jc_tensor_regex = re.compile("\s{0,}J-coupling (.*?)\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
@@ -84,7 +84,7 @@ class Magres:
 
     print >>sys.stderr,"Building atoms"
     for atom in atoms:
-      index = atom[0], int(atom[1])
+      index = atom[0].split(":")[0], int(atom[1])
 
       if index not in self.atoms:
         self.atoms[index] = {}
@@ -139,11 +139,11 @@ class Magres:
       ion.magres = {}
 
       if 'ms' in magres:
-        ion.magres['ms'] = magres['ms']['TOTAL']
-
+        ion.magres['ms'] = numpy.reshape(magres['ms']['TOTAL'], (3,3))
+         
       if 'efg' in magres:
-        ion.magres['efg'] = magres['efg']['TOTAL']
-        ion.magres['Cq'] = efg_to_Cq(magres['efg']['TOTAL'], ion.s)
+        ion.magres['efg'] = numpy.reshape(magres['efg']['TOTAL'], (3,3))
+        ion.magres['Cq'] = efg_to_Cq(ion.magres['efg'], ion.s)
 
       if 'jc' in magres:
         if 'jc' not in ion.magres:
