@@ -29,12 +29,26 @@ class NewMagres:
     """
 
     self.data = format.load_magres(magres_file) 
-    self.atoms = format.load_into_dict(self.data)
+    self.atoms = format.load_into_dict_new(self.data)
 
   def annotate(self, ions):
     """
       Given the corresponding ions structure, annotate.
     """
+    if 'jc' in self.atoms:
+      for s1, i1 in self.atoms['jc']:
+        ion1 = ions.get_species(s1, i1)
+        if not hasattr('magres', ion1):
+          ion1.magres = {}
+
+        if 'jc' in ion1.magres:
+          ion1.magres['jc'] += self.atoms['jc'][(s1, i1)]
+        else:
+          ion1.magres['jc'] = self.atoms['jc'][(s1, i1)]
+
+        ion1.magres['jc_iso'] = dict([(si, numpy.trace(J)) for si, J in ion1.magres['jc'].items()])
+          
+
     for (s, i) in self.atoms.items():
       ion = ions.get_species(s, i)
 

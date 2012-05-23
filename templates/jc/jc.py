@@ -10,11 +10,11 @@ jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
 merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
 
-def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None):
+def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False):
   calc = CastepCalc(source_dir, source_name)
   c = cell.Cell(calc.cell_file)
 
-  _, required_files= pot.add_potentials(settings.NCP_PSPOT_DIR, None, c)
+  _, required_files= pot.add_potentials(settings.NCP_PSPOT_DIR, None, c, rel_pot)
   pot.link_files(required_files, target_dir)
 
   c.other = []

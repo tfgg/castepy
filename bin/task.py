@@ -6,6 +6,7 @@ from castepy.util import calc_from_path, path
 import castepy.settings as settings
 
 tasks = {'jc': path('templates/jc/jc.py'),
+         'jc-rel': path('templates/jc/jc-rel.py'),
          'relax-H': path('templates/relax/relax.py'),
          'relax-full': path('templates/relax/relax-full.py'),
          'copy': path('templates/copy/copy.py'),

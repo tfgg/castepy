@@ -147,7 +147,7 @@ def load_into_dict_new(data):
 
   atoms['atoms'] = {}
   for s,i,pos in data['atom']:
-    atoms['atoms'][(s,i)] = {}
+    atoms['atoms'][(s,i)] = pos
 
   if "lattice" in data:
     atoms["lattice"] = data["lattice"]
@@ -168,15 +168,15 @@ def load_into_dict_new(data):
 
   if 'isc' in data:
     atoms['jc'] = {}
+    atoms['jc_iso'] = {}
+
     for s1, i1, s2, i2, K_tensor in data['isc']:
       if (s1,i1) not in atoms['jc']:
         atoms['jc'][(s1,i1)] = {}
+        atoms['jc_iso'][(s1,i1)] = {}
       
-      if (s2,i2) not in atoms['jc']:
-        atoms['jc'][(s2,i2)] = {}
-
       atoms['jc'][(s1,i1)][(s2,i2)] = K_to_J(K_tensor, s1, s2)
-      atoms['jc'][(s2,i2)][(s1,i1)] = K_to_J(K_tensor, s1, s2)
+      atoms['jc_iso'][(s1,i1)][(s2,i2)] = numpy.trace(atoms['jc'][(s1,i1)][(s2,i2)])/3.0
 
   if 'label' in data:
     atoms['label'] = {}
