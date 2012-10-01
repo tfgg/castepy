@@ -1,7 +1,7 @@
 #!/bin/tcsh
 #$ -cwd
 #$ -j y
-#$ -pe orte 64
+#$ -pe orte 16
 #$ -V
 #$ -l qname=parallel.q
 
@@ -15,7 +15,7 @@ echo Job starting on: `date`
 #cat $TMPDIR/machines
 ls $TMPDIR
 
-mpirun -np $NSLOTS castep %(seedname)s
+mpirun -np $NSLOTS castep-jc %(seedname)s
 
 echo Job ended at: `date`
 

@@ -59,7 +59,7 @@ class CastepCalc:
 
   def load(self, include=None, exclude=None):
     if include is None:
-      include = set(["cell", "params", "magres", "bonds", "energy"])
+      include = set(["cell", "params", "magres", "bonds"])
     else:
       include = set(include)
 

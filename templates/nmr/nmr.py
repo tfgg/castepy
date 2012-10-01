@@ -10,9 +10,11 @@ nmr_path = "/home/green/pylib/castepy/templates/nmr"
 
 merge_cell = cell.Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
 
-def make(source_dir, source_name, target_dir, target_name=None):
+def make(source_dir, source_name, target_dir, target_name=None, c=None):
   calc = CastepCalc(source_dir, source_name)
-  c = cell.Cell(calc.cell_file)
+  
+  if c is None:
+    c = cell.Cell(calc.cell_file)
 
   c.other += merge_cell.other
 

@@ -11,8 +11,8 @@ def parse_bonds(castep_file):
     Parse bonding information from .castep file
   """
   
-  regex_block = re.compile("     Bond                     Population      Length \(A\).*?\n[=]+\n(.*?)\n[=]+", re.M | re.S)
-  regex_line = re.compile("\s+([A-Za-z]+)\s+([0-9]+)\s+--\s+([A-Za-z]+)\s+([0-9]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)\n")
+  regex_block = re.compile("\s+Bond\s+Population\s+Length \(A\).*?\n[=]+\n(.*?)\n[=]+", re.M | re.S)
+  regex_line = re.compile("\s+([A-Za-z]+)\s+([0-9]+)\s+--\s+([A-Za-z]+)\s+([0-9]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)")
 
   bond_blocks = regex_block.findall(castep_file)
 
@@ -20,6 +20,8 @@ def parse_bonds(castep_file):
     return []
   
   block = bond_blocks[len(bond_blocks)-1]
+
+  print block
 
   bonds = []
   for s1, i1, s2, i2, population, r in regex_line.findall(block):

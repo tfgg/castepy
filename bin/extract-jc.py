@@ -21,7 +21,7 @@ calcs = map(calc_from_path, find_all_calcs(cwd))
 find_s2 = str(sys.argv[2])
 find_i2 = int(sys.argv[3])
 
-calcs = sorted(calcs, key=lambda (dir, name): name)
+calcs = sorted(calcs, key=lambda (dir, name): (name, dir))
 
 for dir, name in calcs:
   calc = CastepCalc(dir, name)

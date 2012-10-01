@@ -10,9 +10,11 @@ jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
 merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
 
-def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False):
+def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, c=None):
   calc = CastepCalc(source_dir, source_name)
-  c = cell.Cell(calc.cell_file)
+
+  if c is None:
+    c = cell.Cell(calc.cell_file)
 
   _, required_files= pot.add_potentials(settings.NCP_PSPOT_DIR, None, c, rel_pot)
   pot.link_files(required_files, target_dir)
@@ -25,7 +27,8 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
     c.other.append("jcoupling_site: %s %d" % (jc_s, jc_i))
     c.otherdict['jcoupling_site'] = "%s %d" % (jc_s, jc_i)
 
-  c.jcoupling_shift_origin()
+  #c.jcoupling_shift_origin()
+
   if 'KPOINTS_LIST' in c.blocks:
     del c.blocks['KPOINTS_LIST']
   

@@ -36,6 +36,7 @@ class SCFResult(object):
       cols = line.split()
       #print cols
       #cols = self.loop_step.findall(line)
+
       if len(cols) == 1 or len(cols) == 6 or len(cols) == 7:
         continue
       elif len(cols) == 3:
@@ -43,7 +44,7 @@ class SCFResult(object):
           loop = 0
           energy, timer = cols[1:]
           energy_gain = 1.0
-        elif cols[0] == 'per':
+        elif cols[0] in ['per', 'Real']:
           continue
       elif len(cols) == 4:
         loop, energy, energy_gain, timer = cols
@@ -53,8 +54,6 @@ class SCFResult(object):
         #print len(cols)
         continue
         
-      #print loop, energy, energy_gain, timer
-
       if loop == 'energy':
         continue
 

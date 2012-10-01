@@ -1,7 +1,7 @@
 #!/bin/tcsh
 #$ -cwd
 #$ -j y
-#$ -pe orte 32
+#$ -pe orte 8
 #$ -V
 #$ -l qname=parallel.q
 
@@ -11,9 +11,7 @@ source /opt/gridengine/default/common/settings.csh
 echo Job using the following number of cores: $NSLOTS
 echo Job starting on: `date`
 
-mpirun -np $NSLOTS castep %(seedname)s
+mpirun -np $NSLOTS castep-jc %(seedname)s
 
 echo Job ended at: `date`
-
-echo "Finished $1 at `date`" | mail -s "[Kittel] MPI job finished: $1" tim.green@materials.ox.ac.uk
 

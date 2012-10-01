@@ -73,11 +73,11 @@ class Magres:
     """
       Parse a CASTEP .magres file for total tensors.
     """
-    print >>sys.stderr,"Parsing magres"
+    #print >>sys.stderr,"Parsing magres"
     atom_regex = re.compile("============\nAtom: ([A-Za-z\:0-9]+)\s+([0-9]+)\n============\n([^=]+)\n", re.M | re.S)
     shielding_tensor_regex = re.compile("\s{0,}(.*?) Shielding Tensor\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
 
-    jc_tensor_regex = re.compile("\s{0,}J-coupling (.*?)\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
+    jc_tensor_regex = re.compile("\s{0,}J-coupling (.*?)\n\n\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\n\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\n\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+")
 
     efg_tensor_regex = re.compile("\s{0,}(.*?) tensor\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
 
@@ -96,7 +96,7 @@ class Magres:
 
     self.atoms = {}
 
-    print >>sys.stderr,"Building atoms"
+    #print >>sys.stderr,"Building atoms"
     for atom in atoms:
       index = atom[0].split(":")[0], int(atom[1])
 

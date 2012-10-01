@@ -429,5 +429,5 @@ Q_iso = {'H': 2,
 Q_common = {}
 for s, i in Q_iso.items():
   if (s,i) in gamma:
-   Q_common[s] = Q[(s,i)]
+    Q_common[s] = Q[(s,i)]
 
