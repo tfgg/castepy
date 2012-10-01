@@ -21,8 +21,6 @@ def parse_bonds(castep_file):
   
   block = bond_blocks[len(bond_blocks)-1]
 
-  print block
-
   bonds = []
   for s1, i1, s2, i2, population, r in regex_line.findall(block):
     bonds.append(((s1, int(i1)), (s2, int(i2)), float(population), float(r)))
