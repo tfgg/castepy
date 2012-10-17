@@ -5,18 +5,20 @@ import numpy
 from ion import Ion, Ions
 
 class Parameters:
-    def __init__(self, params=None):
-        if params is not None:
-            if type(params) is dict:
-              self.params = params
-            elif type(params) is str:
-              self.params = self.parse_params(params)
-            elif type(params) is file:
-              self.params = self.parse_params(params.read())
-        else:
-            self.params = {}
+  def __init__(self, params=None):
+    self.__dict__['params'] = {}
 
-    def parse_params(self, params):
+    if params is not None:
+      if type(params) is dict:
+        self.params = params
+      elif type(params) is str:
+        self.params = self.parse_params(params)
+      elif type(params) is file:
+        self.params = self.parse_params(params.read())
+
+    print self.params
+
+  def parse_params(self, params):
         import re
         split_re = re.compile("\s{0,}[=:]\s{0,}")
         comments_re = re.compile("![^\n]+")
@@ -33,17 +35,29 @@ class Parameters:
         
         return params
 
-    def __setitem__(self, n, v):
-        self.params[n] = v
+  def __setitem__(self, n, v):
+    self.params[n] = v
+  
+  def __setattr__(self, n, v):
+    if n in self.__dict__:
+      self.__dict__[n] = v 
+    else:
+      self.params[n] = v
     
-    def __getitem__(self, n):
-        if n in self.params:
-            return self.params[n]
-        else:
-            raise KeyError;
+  def __getitem__(self, n):
+    if n in self.params:
+      return self.params[n]
+    else:
+      raise KeyError
 
-    def __str__(self):
-        return "\n".join(["%s: %s" % (n ,v) for n, v in self.params.items()])
+  def __getattr__(self, key):
+    if key in self.params:
+      return self.params[key]
+    else:
+      raise AttributeError(key)
+
+  def __str__(self):
+    return "\n".join(["%s: %s" % (n ,v) for n, v in self.params.items()])
 
 class Calculation:
     def __init__(self, cell=None, param=None, cell_file_path=None, param_file_path=None, required_files=[]):
@@ -182,5 +196,5 @@ class Castep:
     def sge_execute(self, calculation, num_nodes=1):
         import subprocess
 
-	retcode = subprocess.call([self.sge_command, self.sge_script, calculation.seed_name], cwd=calculation.dir_path)
+        retcode = subprocess.call([self.sge_command, self.sge_script, calculation.seed_name], cwd=calculation.dir_path)
 
