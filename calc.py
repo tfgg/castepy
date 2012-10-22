@@ -1,8 +1,9 @@
 import os, sys
 
-from castepy import Parameters
+from parameters import Parameters
 from cell import Cell
-from nmr import NewMagres
+from nmr import MagresResult
+
 from finished import error_check, castep_finished
 
 import energy
@@ -57,6 +58,21 @@ class CastepCalc:
     else:
       return 'fresh'
 
+  def write(self, dir, seedname):
+    """
+      Write the cell and param file to a particular dir and seedname
+    """
+
+    cell_path = os.path.join(dir, seedname + ".cell")
+    f_cell = open(os.path.join(dir, seedname + ".cell"))
+    print >>f_cell, self.cell
+
+    param_path = os.path.join(dir, seedname + ".param")
+    f_param = open(os.path.join(dir, seedname + ".param"))
+    print >>f_param, self.params
+
+    return (cell_path, param_path)
+
   def load(self, include=None, exclude=None):
     if include is None:
       include = set(["cell", "params", "magres", "bonds"])
@@ -77,7 +93,7 @@ class CastepCalc:
       self.params = Parameters(self.param_file)
 
     if hasattr(self, 'magres_file') and "magres" in to_load:
-      self.magres = NewMagres(self.magres_file)
+      self.magres = MagresResult(self.magres_file)
       #self.magres.annotate(self.cell.ions)
 
     if hasattr(self, 'castep_file') and "bonds" in to_load:
@@ -92,7 +108,7 @@ class CastepCalc:
       except energy.CantFindEnergy:
         self.energy = None
 
-      self.scf = energy.SCFResult(self.castep_file)
+      self.scf = energy.SCFResult.load(self.castep_file)
 
     if hasattr(self, 'castep_file') and "mulliken" in to_load:
       self.mulliken = mulliken.MullikenResult.load(self.castep_file)

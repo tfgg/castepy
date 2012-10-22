@@ -10,9 +10,6 @@ import os
 import sys
 from castepy.cell import Cell
 from castepy.calc import CastepCalc
-import castepy.bonds as bonds
-from castepy.nmr import Magres
-from castepy.format import load_magres, load_into_dict
 from castepy.util import find_all_calcs, calc_from_path
 from castepy.magres_constants import K_to_J, gamma_iso
 import numpy
@@ -30,24 +27,29 @@ if len(sys.argv) >= 4:
 else:
   find_s = find_i = None
 
+if len(sys.argv) >= 5:
+  find_s2 = str(sys.argv[4])
+else:
+  find_s2 = None
+
 all_Js = {}
 
 for dir, name in calcs:
   calc = CastepCalc(dir, name)
-  calc.load(exclude=['bonds', 'magres'])
+  calc.load(exclude=['bonds'])
 
   if not hasattr(calc, 'magres_file'):
     continue
 
-  data = load_magres(calc.magres_file)
-
-  if 'isc' not in data:
+  try:
+    calc.magres.isc
+  except:
     print "# J-coupling not found for %s %s" % (dir,name)
     continue
 
-  for s1,i1,s2,i2,K_tensor in data['isc']:
-    if (find_s is None and find_i is None) or (s2 == find_s and i2 == find_i) or (s1 == find_s and i1 == find_i):
-      all_Js[(s1,i1,s2,i2)] = K_tensor
+  for s1,i1,s2,i2,K_tensor in calc.magres.isc:
+    if (find_s is None and find_i is None) or (s2 == find_s and i2 == find_i) or (s1 == find_s and i1 == find_i) and (find_s2 is None or s2 == find_s2):
+      all_Js[(s1,i1,s2,i2)] = numpy.reshape(K_tensor, (3,3))
 
 matching_Js = []
 
@@ -60,9 +62,4 @@ matching_Js = sorted(matching_Js, key=lambda (s1,i1,s2,i2,K_tensor): sorted(((s1
 for s1,i1,s2,i2,K_tensor in matching_Js:
   print "%d%s%d" % (gamma_iso[s1],s1,i1), "%d%s%d" % (gamma_iso[s2],s2,i2), numpy.trace(K_to_J(K_tensor, s1, s2))/3.0, numpy.trace(K_tensor)/3.0
 
-#  if hasattr(calc, 'magres'):
-#    calc.magres.annotate(calc.cell.ions)
-#    
-#    print "#", dir, name
-#    print calc.params['cut_off_energy'], calc.cell.ions.get_species(s2, i2).magres['jc_prop'][(s1,i1)]['iso']
 

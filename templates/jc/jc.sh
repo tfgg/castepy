@@ -1,9 +1,10 @@
 #!/bin/tcsh
 #$ -cwd
 #$ -j y
-#$ -pe orte 16
+#$ -pe orte 32
 #$ -V
 #$ -l qname=parallel.q
+#$ -l h_vmem=92G
 
 source %(CASTEPY_ROOT)s/templates/cluster_local.csh
 source /opt/gridengine/default/common/settings.csh

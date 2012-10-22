@@ -5,7 +5,8 @@ import math
 import numpy
 
 from cell import Cell
-import format
+from magres.format import MagresFile
+
 from magres_constants import gamma_common, efg_to_Cq
 
 def tensor_properties(matrix):
@@ -22,49 +23,75 @@ def tensor_properties(matrix):
 
   return prop
 
-class NewMagres:
+class DictAttrAccessor:
+  def __init__(self, d):
+    self.d = d
+
+  def __getattr__(self, key):
+    if key not in self.d:
+      raise AttributeError
+    else:
+      if type(self.d[key]) == dict:
+        return DictAttrAccessor(self.d[key])
+      else:
+        return self.d[key]
+
+class MagresResult:
   def __init__(self, magres_file=None):
     """
       Load new .magres format file into dictionary structure.
     """
 
-    self.data = format.load_magres(magres_file) 
-    self.atoms = format.load_into_dict_new(self.data)
+    self.magres_file = MagresFile(magres_file)
+
+  def __getattr__(self, key):
+    if 'magres' not in self.magres_file.data_dict:
+      raise AttributeError(key)
+
+    d = self.magres_file.data_dict['magres']
+
+    if key not in d:
+      raise AttributeError(key)
+    else:
+      if type(d[key]) == dict:
+        return DictAttrAccessor(d[key])
+      else:
+        return d[key]
 
   def annotate(self, ions):
     """
-      Given the corresponding ions structure, annotate.
+      Given the corresponding ions structure, annotate with magres data.
     """
-    if 'jc' in self.atoms:
-      for s1, i1 in self.atoms['jc']:
+
+    try:
+      for s1, i1, s2, i2, K_tensor in self.isc:
         ion1 = ions.get_species(s1, i1)
-        if not hasattr('magres', ion1):
+
+        if not hasattr(ion1, 'magres'):
           ion1.magres = {}
 
-        if 'jc' in ion1.magres:
-          ion1.magres['jc'] += self.atoms['jc'][(s1, i1)]
-        else:
-          ion1.magres['jc'] = self.atoms['jc'][(s1, i1)]
+        if 'isc' not in ion1.magres:
+          ion1.magres['isc'] = {}
 
-        ion1.magres['jc_iso'] = dict([(si, numpy.trace(J)) for si, J in ion1.magres['jc'].items()])
-          
+        ion1.magres['isc'][(s2, i2)] = numpy.asarray(K_tensor)
+    except AttributeError:
+      pass
 
-    for (s, i) in self.atoms.items():
-      ion = ions.get_species(s, i)
+    try:
+      for s, i, efg_tensor in self.efg:
+        ion = ions.get_species(s, i)
 
-      ion.magres = self.atoms[(s,i)]
+        if not hasattr(ion1, 'magres'):
+          ion.magres = {}
 
-      #if 'jc' in magres:
-      #  if 'jc' not in ion.magres:
-      #    ion.magres['isc'] = {}
-      #    ion.magres['jc'] = {}
-      #    ion.magres['jc_prop'] = {}
-      #  J_tensor = [x * gamma_common[s] * gamma_common[jc_ion_s] * 1.05457148e-15 / (2.0 * math.pi) for x in magres['jc']['Total']]
-      #  ion.magres['isc'][(jc_ion_s, jc_ion_i)] = magres['jc']['Total']
-      #  ion.magres['jc'][(jc_ion_s, jc_ion_i)] = J_tensor
-      #  ion.magres['jc_prop'][(jc_ion_s, jc_ion_i)] = tensor_properties(J_tensor)
+        if 'efg' not in ion1.magres:
+          ion1.magres['efg'] = {}
 
-class Magres:
+        ion1.magres['efg'] = numpy.asarray(efg_tensor)
+    except AttributeError:
+      pass
+
+class OldMagresResult:
   def __init__(self, magres_file=None):
     if magres_file is not None:
       self.parse(magres_file)

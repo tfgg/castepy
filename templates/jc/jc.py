@@ -1,5 +1,6 @@
 import sys, os
 import shutil
+import re
 
 import castepy.settings as settings
 from castepy import castepy, cell, pot
@@ -9,6 +10,8 @@ from castepy.util import calc_from_path
 jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
 merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
+
+regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 
 def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, c=None):
   calc = CastepCalc(source_dir, source_name)
@@ -21,6 +24,27 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
 
   c.other = []
 
+  if jc_s is None:
+    # Let's first see if we can guess the species from the target directory.
+    # I usually name mine e.g. Pb17, so it can guess from that
+    species_matches = regex_species.findall(target_dir) 
+
+    if species_matches:
+      jc_s = species_matches[0][0]
+      jc_i = int(species_matches[0][1])
+      jsiteraw = raw_input("Specify the j-coupling site (%s %d): " % (jc_s, jc_i))
+
+      if jsiteraw:
+        j_site = jsiteraw.split()
+        jc_s = j_site[0]
+        jc_i = int(j_site[1])
+    else:
+      jsiteraw = raw_input("Specify the j-coupling site: ")
+
+      j_site = jsiteraw.split()
+      jc_s = j_site[0]
+      jc_i = int(j_site[1])
+
   if jc_s is not None:
     jc_ion = c.ions.get_species(jc_s, jc_i)
   
@@ -28,6 +52,7 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
     c.otherdict['jcoupling_site'] = "%s %d" % (jc_s, jc_i)
 
   #c.jcoupling_shift_origin()
+  c.ions.translate_origin([0.001, 0.001, 0.001])
 
   if 'KPOINTS_LIST' in c.blocks:
     del c.blocks['KPOINTS_LIST']

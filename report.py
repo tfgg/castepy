@@ -1,4 +1,4 @@
-# Print out header information for every script to help reproducing results
+# Print out header information for every script to help reproduce results
 import sys, os
 from datetime import datetime
 

@@ -21,21 +21,22 @@ def parse(castep_file):
 
 class SCFResult(object):
   find_lines = re.compile(r'(.*?)\<\-\- SCF\n')
-  #loop_step = re.compile(r'\s{0,}(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s\s', re.S)
 
-  def __init__(self, castep_file):
-    self.load(castep_file)
+  def __init__(self, scf_run):
+    self.steps = scf_run
 
-  def load(self, castep_file):
-    scf_lines = self.find_lines.findall(castep_file)
+  def __str__(self):
+    return "# loop energy energy_gain log_energy_gain timer\n" + "\n".join([" ".join(map(str, step)) for step in self.steps])
 
-    self.scf_runs = []
+  @classmethod
+  def load(klass, castep_file):
+    scf_lines = klass.find_lines.findall(castep_file)
+
+    scf_runs = []
     scf_run = []
 
     for line in scf_lines:
       cols = line.split()
-      #print cols
-      #cols = self.loop_step.findall(line)
 
       if len(cols) == 1 or len(cols) == 6 or len(cols) == 7:
         continue
@@ -67,14 +68,22 @@ class SCFResult(object):
       timer = float(timer)
         
       if scf_run and loop == 0:
-        self.scf_runs.append(scf_run)
+        scf_runs.append(scf_run)
         scf_run = []
 
       scf_run.append((loop, energy, energy_gain, math.log(abs(energy_gain), 10), timer))
 
-    self.scf_runs.append(scf_run)
+    scf_runs.append(scf_run)
+
+    scf_results = []
+    for scf_run in scf_runs:
+      scf_results.append(SCFResult(scf_run))
+
+    return scf_results
 
 if __name__ == "__main__":
-  scf_result = SCFResult(open(sys.argv[1]).read())
-  print scf_result.scf_runs
+  scf_results = SCFResult.load(open(sys.argv[1]).read())
+
+  for scf_result in scf_results:
+    print scf_result, "\n"
   #print parse(open(sys.argv[1]).read())
