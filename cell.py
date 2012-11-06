@@ -190,6 +190,9 @@ class Cell:
 
       return (min_ion, math.sqrt(min_d2), min_p)
 
+    def least_mirror(self, p, q):
+      return least_mirror(p, q, self.basis, self.lattice)
+
     def neighbours(self, q, max_dist=None, above_index=0, species=None):
       """
         Return neighbours of q in distance order, for easy slicing
@@ -199,7 +202,7 @@ class Cell:
       for i in range(above_index, len(self.ions)):
         ion = self.ions[i]
 
-        d2, p = least_mirror(ion.p, q, self.basis, self.lattice)
+        d2, p = self.least_mirror(ion.p, q)
 
         if (max_dist is None or d2 < max_dist**2) and (species is None or ion.s in species):
           ions.append((ion, math.sqrt(d2), p))

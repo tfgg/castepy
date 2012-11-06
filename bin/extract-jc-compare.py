@@ -13,6 +13,7 @@ from castepy.calc import CastepCalc
 from castepy.util import find_all_calcs, calc_from_path
 from castepy.magres_constants import K_to_J, gamma_iso
 import numpy
+import math
 
 cwd = ["."]
 if len(sys.argv)>1:
@@ -60,6 +61,10 @@ for (s1,i1,s2,i2),K_tensor in all_Js.items():
 matching_Js = sorted(matching_Js, key=lambda (s1,i1,s2,i2,K_tensor): sorted(((s1,i1),(s2,i2))))
 
 for s1,i1,s2,i2,K_tensor in matching_Js:
-  print "%d%s%d" % (gamma_iso[s1],s1,i1), "%d%s%d" % (gamma_iso[s2],s2,i2), numpy.trace(K_to_J(K_tensor, s1, s2))/3.0, numpy.trace(K_tensor)/3.0
+  ion1 = calc.cell.ions.get_species(s1, i1)
+  ion2 = calc.cell.ions.get_species(s2, i2)
 
+  d2, dr = calc.cell.least_mirror(ion1.p, ion2.p)
+
+  print "%d%s%d" % (gamma_iso[s1],s1,i1), "%d%s%d" % (gamma_iso[s2],s2,i2), numpy.trace(K_to_J(K_tensor, s1, s2))/3.0, numpy.trace(K_tensor)/3.0, math.sqrt(d2)
 

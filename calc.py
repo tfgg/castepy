@@ -10,13 +10,18 @@ import energy
 import bonds
 import mulliken
 
-def calcs_on_path(dir):
+def calcs_on_path(dir, load=False):
   from util import find_all_calcs, calc_from_path
 
   calcs = []
 
   for dir, name in map(calc_from_path, find_all_calcs(dir)):
-    calcs.append(CastepCalc(dir, name))
+    calc = CastepCalc(dir, name)
+
+    if load:
+      calc.load()
+
+    calcs.append(calc)
 
   return calcs
 

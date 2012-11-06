@@ -1,4 +1,4 @@
-from castepy.cell import Cell
+from cell import Cell
 
 def add_constraints(cell, filter):
   constraints = []
