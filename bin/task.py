@@ -15,7 +15,7 @@ tasks = {'jc': path('templates/jc/jc.py'),
          'spectral': path('templates/spectral/spectral.py'),
          'python': path('templates/python/python.py'),}
 
-def make_task(task, source_dir, source_name, target_dir):
+def make_task(task, source_dir, source_name, target_dir, **kwargs):
   module_path = tasks[task]
   module_dir, module_file = os.path.split(module_path)
   module_name, _ = os.path.splitext(module_file)
@@ -24,7 +24,18 @@ def make_task(task, source_dir, source_name, target_dir):
   
   m = __import__(module_name)
 
-  m.make(source_dir, source_name, target_dir)
+  m.make(source_dir, source_name, target_dir, **kwargs)
+
+def inquire_num_cores():
+  num_cores = 32
+  num_cores_raw = raw_input("How many cores? (%d): " % (num_cores))
+  
+  try:
+    num_cores = int(num_cores_raw)
+  except:
+    pass
+
+  return num_cores
 
 if __name__ == "__main__":
   if len(sys.argv) < 2:
@@ -36,5 +47,7 @@ if __name__ == "__main__":
   source_dir, source_name = calc_from_path(source_path)
   target_dir = str(sys.argv[3])
 
-  make_task(task, source_dir, source_name, target_dir)
+  num_cores = inquire_num_cores()
+
+  make_task(task, source_dir, source_name, target_dir, num_cores=num_cores)
 
