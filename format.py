@@ -52,13 +52,24 @@ def write_cell(cell):
   return "\n".join(lines)
 
 def load_magres(magres_file):
+  def sitensor33(d):
+     return (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3))))
+  
+  def sisitensor33(d):
+     return (data[0], int(data[1]), data[2], int(data[3]), numpy.mat(numpy.reshape(map(float, data[4:]), (3,3))))
+  
+  def atom(data):
+    if len(data) == 5:
+      return (data[0], int(data[1]), map(float, data[2:]))
+    else:
+      return (data[0], int(data[2]), map(float, data[3:]))
+
   proc = {'lattice': lambda data: numpy.reshape(map(float, data), (3,3)),
-          'atom': lambda data: (data[0], int(data[1]), map(float, data[2:])),
-          'ms': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
-          'efg': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
-          'efg_local': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
-          'efg_nonlocal': lambda data: (data[0], int(data[1]), numpy.mat(numpy.reshape(map(float, data[2:]), (3,3)))),
-          'isc': lambda data: (data[0], int(data[1]), data[2], int(data[3]), numpy.mat(numpy.reshape(map(float, data[4:]), (3,3)))),
+          'atom': atom,
+          'ms': sitensor33,
+          'efg': sitensor33, 'efg_local': sitensor33, 'efg_nonlocal': sitensor33,
+          'isc': sisitensor33, 'isc_fc': sisitensor33, 'isc_spin': sisitensor33,
+          'isc_orbital_p': sisitensor33, 'isc_orbital_d': sisitensor33,
           'label': lambda data: (data[0], int(data[1]), data[2]),}
   
   def clean(s):
@@ -79,6 +90,7 @@ def load_magres(magres_file):
     if tag in proc:
       obj = proc[tag](data)
     else:
+      continue
       obj = data
 
     if tag in d:
@@ -147,19 +159,20 @@ def load_into_dict_new(data):
 
   atoms['atoms'] = {}
   for s,i,pos in data['atom']:
-    atoms['atoms'][(s,i)] = {}
+    atoms['atoms'][(s,i)] = pos
 
   if "lattice" in data:
     atoms["lattice"] = data["lattice"]
 
-  if 'efg' in data:
-    atoms["efg"] = {}
-    for s,i,efg_tensor in data['efg']:
-      efg = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
-      Cq = largest_eval(atoms[(s,i)]['efg'])
-
-      atoms["efg"][(s,i)] = {'efg': efg,
-                             'Cq': Cq,}
+  #if 'efg' in data:
+  #  atoms["efg"] = {}
+  #  for s,i,efg_tensor in data['efg']:
+  #    efg = val_to_Cq((efg_tensor + efg_tensor.H)/2.0, s)
+#
+#      Cq = largest_eval(efg)
+#
+#      atoms["efg"][(s,i)] = {'efg': efg,
+#                             'Cq': Cq,}
 
   if 'ms' in data:
     atoms['ms'] = {}
@@ -168,15 +181,15 @@ def load_into_dict_new(data):
 
   if 'isc' in data:
     atoms['jc'] = {}
+    atoms['jc_iso'] = {}
+
     for s1, i1, s2, i2, K_tensor in data['isc']:
       if (s1,i1) not in atoms['jc']:
         atoms['jc'][(s1,i1)] = {}
+        atoms['jc_iso'][(s1,i1)] = {}
       
-      if (s2,i2) not in atoms['jc']:
-        atoms['jc'][(s2,i2)] = {}
-
       atoms['jc'][(s1,i1)][(s2,i2)] = K_to_J(K_tensor, s1, s2)
-      atoms['jc'][(s2,i2)][(s1,i1)] = K_to_J(K_tensor, s1, s2)
+      atoms['jc_iso'][(s1,i1)][(s2,i2)] = numpy.trace(atoms['jc'][(s1,i1)][(s2,i2)])/3.0
 
   if 'label' in data:
     atoms['label'] = {}

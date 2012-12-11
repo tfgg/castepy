@@ -29,3 +29,9 @@ class Accum:
 
     return "\n".join(["%s %f %f %f" % (str(bin), self.count[bin], means[bin], sd[bin]) for bin in self.bins])
 
+  def as_csv(self):
+    means = self.mean()
+    sd = self.sd()
+
+    return "\n".join(["%s %f %f %f" % (" ".join(map(str,bin)), self.count[bin], means[bin], sd[bin]) for bin in self.bins])
+

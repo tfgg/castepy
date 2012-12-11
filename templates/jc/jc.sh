@@ -1,9 +1,10 @@
 #!/bin/tcsh
 #$ -cwd
 #$ -j y
-#$ -pe orte 64
+#$ -pe orte 16
 #$ -V
 #$ -l qname=parallel.q
+#$ -l h_vmem=46G
 
 source %(CASTEPY_ROOT)s/templates/cluster_local.csh
 source /opt/gridengine/default/common/settings.csh
@@ -15,7 +16,7 @@ echo Job starting on: `date`
 #cat $TMPDIR/machines
 ls $TMPDIR
 
-mpirun -np $NSLOTS castep %(seedname)s
+mpirun -np $NSLOTS castep-jc %(seedname)s
 
 echo Job ended at: `date`
 

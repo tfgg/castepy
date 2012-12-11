@@ -1,13 +1,23 @@
 import unittest
-import cell
-import bonds
+import castepy.cell as cell
+import castepy.bonds as bonds
 
 class TestBonds(unittest.TestCase):
   calc1_path = "test_data/ethanol/ethanol"
 
-  def test_ethanol(self):
+  def test_ethanol1(self):
     """
-      Read in ethanol cell and bonds and check they're correct.
+      Check basic bond parser is working for example of ethanol.
+    """
+
+    parsed_bonds = bonds.parse_bonds(open(self.calc1_path + ".castep").read())
+
+    # Make sure we parse all the bonds
+    self.assertEqual(len(parsed_bonds), 32)
+
+  def test_ethanol2(self):
+    """
+      Read in ethanol cell and load bonds onto ions and check they're correct.
     """
 
     c = cell.Cell(open("%s.cell" % self.calc1_path).read())

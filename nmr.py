@@ -5,7 +5,8 @@ import math
 import numpy
 
 from cell import Cell
-import format
+from magres.format import MagresFile
+
 from magres_constants import gamma_common, efg_to_Cq
 
 def tensor_properties(matrix):
@@ -22,35 +23,75 @@ def tensor_properties(matrix):
 
   return prop
 
-class NewMagres:
+class DictAttrAccessor:
+  def __init__(self, d):
+    self.d = d
+
+  def __getattr__(self, key):
+    if key not in self.d:
+      raise AttributeError
+    else:
+      if type(self.d[key]) == dict:
+        return DictAttrAccessor(self.d[key])
+      else:
+        return self.d[key]
+
+class MagresResult:
   def __init__(self, magres_file=None):
     """
       Load new .magres format file into dictionary structure.
     """
 
-    self.data = format.load_magres(magres_file) 
-    self.atoms = format.load_into_dict(self.data)
+    self.magres_file = MagresFile(magres_file)
+
+  def __getattr__(self, key):
+    if 'magres' not in self.magres_file.data_dict:
+      raise AttributeError(key)
+
+    d = self.magres_file.data_dict['magres']
+
+    if key not in d:
+      raise AttributeError(key)
+    else:
+      if type(d[key]) == dict:
+        return DictAttrAccessor(d[key])
+      else:
+        return d[key]
 
   def annotate(self, ions):
     """
-      Given the corresponding ions structure, annotate.
+      Given the corresponding ions structure, annotate with magres data.
     """
-    for (s, i) in self.atoms.items():
-      ion = ions.get_species(s, i)
 
-      ion.magres = self.atoms[(s,i)]
+    try:
+      for s1, i1, s2, i2, K_tensor in self.isc:
+        ion1 = ions.get_species(s1, i1)
 
-      #if 'jc' in magres:
-      #  if 'jc' not in ion.magres:
-      #    ion.magres['isc'] = {}
-      #    ion.magres['jc'] = {}
-      #    ion.magres['jc_prop'] = {}
-      #  J_tensor = [x * gamma_common[s] * gamma_common[jc_ion_s] * 1.05457148e-15 / (2.0 * math.pi) for x in magres['jc']['Total']]
-      #  ion.magres['isc'][(jc_ion_s, jc_ion_i)] = magres['jc']['Total']
-      #  ion.magres['jc'][(jc_ion_s, jc_ion_i)] = J_tensor
-      #  ion.magres['jc_prop'][(jc_ion_s, jc_ion_i)] = tensor_properties(J_tensor)
+        if not hasattr(ion1, 'magres'):
+          ion1.magres = {}
 
-class Magres:
+        if 'isc' not in ion1.magres:
+          ion1.magres['isc'] = {}
+
+        ion1.magres['isc'][(s2, i2)] = numpy.asarray(K_tensor)
+    except AttributeError:
+      pass
+
+    try:
+      for s, i, efg_tensor in self.efg:
+        ion = ions.get_species(s, i)
+
+        if not hasattr(ion1, 'magres'):
+          ion.magres = {}
+
+        if 'efg' not in ion1.magres:
+          ion1.magres['efg'] = {}
+
+        ion1.magres['efg'] = numpy.asarray(efg_tensor)
+    except AttributeError:
+      pass
+
+class OldMagresResult:
   def __init__(self, magres_file=None):
     if magres_file is not None:
       self.parse(magres_file)
@@ -59,11 +100,11 @@ class Magres:
     """
       Parse a CASTEP .magres file for total tensors.
     """
-    print >>sys.stderr,"Parsing magres"
+    #print >>sys.stderr,"Parsing magres"
     atom_regex = re.compile("============\nAtom: ([A-Za-z\:0-9]+)\s+([0-9]+)\n============\n([^=]+)\n", re.M | re.S)
     shielding_tensor_regex = re.compile("\s{0,}(.*?) Shielding Tensor\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
 
-    jc_tensor_regex = re.compile("\s{0,}J-coupling (.*?)\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
+    jc_tensor_regex = re.compile("\s{0,}J-coupling (.*?)\n\n\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\n\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\n\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+([0-9eE\.\-]+)\s+")
 
     efg_tensor_regex = re.compile("\s{0,}(.*?) tensor\n\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\n\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+")
 
@@ -82,7 +123,7 @@ class Magres:
 
     self.atoms = {}
 
-    print >>sys.stderr,"Building atoms"
+    #print >>sys.stderr,"Building atoms"
     for atom in atoms:
       index = atom[0].split(":")[0], int(atom[1])
 

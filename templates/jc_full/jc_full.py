@@ -1,7 +1,7 @@
 import sys, os, stat
 import re
 
-from castepy.templates.jc import jc
+from castepy.templates.jc import jc_rel
 from castepy.util import calc_from_path
 
 def parse_species(s):
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     if not os.path.isdir(target_dir):
       os.mkdir(target_dir)
      
-    jc.make(source_dir, name, target_dir, name, s, i)
+    jc_rel.make(source_dir, name, target_dir, name, s, i)
     runs.append((run_dir, name))
 
   make_submit_all_script(target_dir_prefix, runs)

@@ -19,9 +19,12 @@ def delta(i,j):
   if i == j: return 1
   else: return 0
 
-def quadrupole(points):
+def quadrupole(points, weights=None):
   points = map(numpy.array, points)
   mean = sum(points) / len(points)
+
+  if weights is None:
+    weights = [1.0 for point in points]
   
   points = [p - mean for p in points]
 
@@ -30,8 +33,8 @@ def quadrupole(points):
   Q = numpy.array([[0.0] * d]*d)
   for i in range(d):
     for j in range(d):
-      for point in points:
-        Q[i,j] += 2.0*point[i] * point[j] - delta(i,j) * point[i]**2
+      for weight, point in zip(weights, points):
+        Q[i,j] += weight * (3.0*point[i] * point[j] - delta(i,j) * point[i]**2)
 
   return Q
 
