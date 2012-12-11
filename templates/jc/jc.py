@@ -1,6 +1,7 @@
 import sys, os
 import shutil
 import re
+import random
 
 import castepy.settings as settings
 from castepy import castepy, cell, pot
@@ -13,7 +14,7 @@ merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
 
 regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 
-def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, c=None):
+def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, c=None, **kwargs):
   calc = CastepCalc(source_dir, source_name)
 
   if c is None:
@@ -68,9 +69,23 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
 
   shutil.copyfile(os.path.join(jc_path, "jc.param"), param_target)
 
+  if 'num_cores' in kwargs:
+    num_cores = kwargs['num_cores']
+  else:
+    num_cores = 32
+
+  #queue = random.choice(["parallel.q", "parallel.q", "long.q"])
+  queue = "parallel.q"
+  
   sh_context = {'seedname': target_name,
                 'CASTEPY_ROOT': settings.CASTEPY_ROOT,
-                'USER_EMAIL': settings.USER_EMAIL,}
+                'USER_EMAIL': settings.USER_EMAIL,
+                'num_cores': num_cores,
+                'h_vmem': float(num_cores)/8 * 23,
+                'queue': queue}
+
+  print sh_context
+
   sh_source = open(os.path.join(jc_path, "jc.sh")).read()
   sh_target_file = open(sh_target, "w+")
   print >>sh_target_file, sh_source % sh_context

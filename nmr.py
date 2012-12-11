@@ -36,13 +36,16 @@ class DictAttrAccessor:
       else:
         return self.d[key]
 
-class MagresResult:
+class MagresResult(object):
   def __init__(self, magres_file=None):
     """
       Load new .magres format file into dictionary structure.
     """
 
-    self.magres_file = MagresFile(magres_file)
+    if type(magres_file) == MagresFile:
+      self.magres_file = magres_file
+    else:
+      self.magres_file = MagresFile(magres_file)
 
   def __getattr__(self, key):
     if 'magres' not in self.magres_file.data_dict:
