@@ -28,12 +28,17 @@ if len(sys.argv) >= 4:
 else:
   find_s = find_i = None
 
-if len(sys.argv) >= 5:
+if len(sys.argv) >= 5 and sys.argv[4] != "X":
   find_s2 = str(sys.argv[4])
 else:
   find_s2 = None
 
 all_Js = {}
+
+if len(sys.argv) >= 6:
+  tensor = sys.argv[5]
+else:
+  tensor = "isc"
 
 for dir, name in calcs:
   calc = CastepCalc(dir, name)
@@ -43,12 +48,12 @@ for dir, name in calcs:
     continue
 
   try:
-    calc.magres.isc
+    getattr(calc.magres, tensor)
   except:
     print "# J-coupling not found for %s %s" % (dir,name)
     continue
 
-  for s1,i1,s2,i2,K_tensor in calc.magres.isc:
+  for s1,i1,s2,i2,K_tensor in getattr(calc.magres, tensor):
     if (find_s is None and find_i is None) or (s2 == find_s and i2 == find_i) or (s1 == find_s and i1 == find_i) and (find_s2 is None or s2 == find_s2):
       all_Js[(s1,i1,s2,i2)] = numpy.reshape(K_tensor, (3,3))
 

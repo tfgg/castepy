@@ -23,6 +23,11 @@ find_i2 = int(sys.argv[3])
 #for calc in calcs:
 #  print calc.params
 
+if len(sys.argv) >= 5:
+  tensor = sys.argv[4]
+else:
+  tensor = "isc"
+
 calcs = sorted(calcs, key=lambda calc: float(calc.params.cut_off_energy[0]))
 
 for calc in calcs:
@@ -36,7 +41,7 @@ for calc in calcs:
     print "# J-coupling not found for %s %s" % (calc.dir, calc.name)
     continue
 
-  for s1,i1,s2,i2,K_tensor in calc.magres.isc:
+  for s1,i1,s2,i2,K_tensor in getattr(calc.magres, tensor):
     if (s2 == find_s2 and i2 == find_i2):
       K_tensor = numpy.reshape(K_tensor, (3,3))
       print calc.params.cut_off_energy[0], "%d%s%d" % (gamma_iso[s1],s1,i1), "%d%s%d" % (gamma_iso[s2],s2,i2), numpy.trace(K_to_J(K_tensor, s1, s2))/3.0, numpy.trace(K_tensor)/3.0, calc.name, calc.dir

@@ -1,2 +1,5 @@
 kpoint_mp_spacing 0.06
 
+%block SPECIES_POT
+Pb  3|2.4|2.35|1.6|9.2|12.9|16.5|60UU:61UU:52UU[]
+%endblock SPECIES_POT

@@ -32,6 +32,8 @@ if __name__ == "__main__":
 
   find_all_ext(search_path, "sh", found)
 
+  found = [f for f in found if "submit_all.sh" not in f]
+
   root_path = os.getcwd()
 
   script_path = 'submit_all.sh'

@@ -10,4 +10,4 @@ rm *.cst_esp
 rm *.bib
 rm dipole_op.*
 rm pos_op.*
-
+rm core.*

@@ -2,6 +2,7 @@ import sys, os
 import shutil
 import random
 
+import castepy.settings as settings
 from castepy import castepy, cell
 from castepy.calc import CastepCalc
 from castepy.util import calc_from_path
@@ -39,6 +40,8 @@ def make(source_dir, source_name, target_dir, target_name=None, c=None, **kwargs
                 'num_cores': num_cores,
                 'h_vmem': float(num_cores)/8 * 23,
                 'queue': queue,
+                'CASTEPY_ROOT': settings.CASTEPY_ROOT,
+                'USER_EMAIL': settings.USER_EMAIL,
                 }
 
   sh_source = open(os.path.join(nmr_path, "nmr.sh")).read()

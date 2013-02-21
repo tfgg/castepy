@@ -10,7 +10,7 @@ from castepy.util import calc_from_path
 relax_path = "/home/green/pylib/castepy/templates/relax"
 merge_cell = cell.Cell(open(os.path.join(relax_path, "relax.cell")).read())
 
-def make(source_dir, source_name, target_dir, target_name=None, relax_species=["H"], **kwargs):
+def make(source_dir, source_name, target_dir, target_name=None, relax_species=["H","F"], **kwargs):
   cal = calc.CastepCalc(source_dir, source_name)
   c = cell.Cell(cal.cell_file)
   if relax_species is None:
@@ -31,10 +31,10 @@ def make(source_dir, source_name, target_dir, target_name=None, relax_species=["
   else:
     num_cores = 32
 
-  if num_cores == 32:
-    queue = "long.q"
-  else:
-    queue = "parallel.q"
+  #if num_cores == 32:
+  #  queue = "long.q"
+  #else:
+  queue = "parallel.q"
 
   target_cell = os.path.join(target_dir, "%s.cell" % source_name)
   target_param = os.path.join(target_dir, "%s.param" % source_name)

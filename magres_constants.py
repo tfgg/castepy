@@ -36,6 +36,10 @@ def K_to_J(K, s1, s2):
   # More magic constants. Should make a proper atomic unit conversion function
   return (K + K.T)/2.0 * gamma_common[s1] * gamma_common[s2] * 1.05457148e-15 / (2*math.pi)
 
+def J_to_K(J, s1, s2):
+  # More magic constants. Should make a proper atomic unit conversion function
+  return J / gamma_common[s1] / gamma_common[s2] / 1.05457148e-15 * (2*math.pi)
+
 # Nuclear gyromagnetic ratios, from constants.f90, source IUPAC Recommendations 2001, Robin K. Harris et al
 gamma={('H', 1): 26.7522128e7,
        ('H', 2): 4.10662791e7,

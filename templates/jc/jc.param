@@ -3,7 +3,7 @@ opt_strategy : speed
 task        = magres
 magres_task = jcoupling
 cut_off_energy = 80 ry 
-xc_functional : PBE
+xc_functional : LDA
 popn_calculate: true
 spin_polarized: false
 max_scf_cycles: 60

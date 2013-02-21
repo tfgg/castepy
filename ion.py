@@ -47,7 +47,11 @@ class Ion:
   def copy(self):
     rtn = Ion(str(self.s), tuple(self.p))
     rtn.i = int(i)
- 
+
+  @property
+  def idx(self):
+    return (self.s, self.i)
+
 class Ions:
   def __init__(self):
     self.ions = []

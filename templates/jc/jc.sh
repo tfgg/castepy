@@ -16,7 +16,7 @@ echo Job starting on: `date`
 #cat $TMPDIR/machines
 ls $TMPDIR
 
-mpirun -np $NSLOTS castep-jc %(seedname)s
+mpirun --mca btl self,openib,sm,tcp -np $NSLOTS castep-jc %(seedname)s
 
 echo Job ended at: `date`
 
