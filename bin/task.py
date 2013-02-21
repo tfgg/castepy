@@ -1,4 +1,4 @@
-#!/home/green/bin/python
+#!/usr/bin/python
 
 import os, sys
 from castepy.cell import Cell
