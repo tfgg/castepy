@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 import os, sys
-from castepy.cell import Cell
+from castepy.input.cell import Cell
 from castepy.util import calc_from_path, path
+
 import castepy.settings as settings
 
 tasks = {'jc': path('templates/jc/jc.py'),

@@ -1,7 +1,7 @@
 import re
 import sys
-import ion
-from ion import least_mirror
+import castepy.ion
+from castepy.ion import least_mirror
 import numpy
 from numpy import dot, array
 import math

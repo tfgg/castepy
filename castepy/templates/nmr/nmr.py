@@ -3,11 +3,11 @@ import shutil
 import random
 
 import castepy.settings as settings
-from castepy import castepy, cell
+from castepy.input import cell
 from castepy.calc import CastepCalc
 from castepy.util import calc_from_path
 
-nmr_path = "/home/green/pylib/castepy/templates/nmr"
+nmr_path = os.path.join(settings.CASTEPY_ROOT, "templates/nmr")
 
 merge_cell = cell.Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
 

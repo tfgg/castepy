@@ -1,14 +1,14 @@
 import os, sys
 
-from parameters import Parameters
-from cell import Cell
-from nmr import MagresResult
+from input.parameters import Parameters
+from input.cell import Cell
+from output.nmr import MagresResult
 
-from finished import error_check, castep_finished
+from output.finished import error_check, castep_finished
 
-import energy
-import bonds
-import mulliken
+import output.energy
+import output.bonds
+import output.mulliken
 
 def calcs_on_path(dir, load=False):
   from util import find_all_calcs, calc_from_path
@@ -54,6 +54,7 @@ class CastepCalc:
 
     if include is not None:
       self.load(include, exclude)
+
 
   def state(self):
     if castep_finished(self.dir, self.name):

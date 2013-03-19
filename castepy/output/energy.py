@@ -81,9 +81,3 @@ class SCFResult(object):
 
     return scf_results
 
-if __name__ == "__main__":
-  scf_results = SCFResult.load(open(sys.argv[1]).read())
-
-  for scf_result in scf_results:
-    print scf_result, "\n"
-  #print parse(open(sys.argv[1]).read())

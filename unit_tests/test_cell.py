@@ -1,5 +1,5 @@
 import unittest
-import castepy.cell as cell
+import castepy.input.cell as cell
 
 class TestCell(unittest.TestCase):
   cell1_path = "test_data/ethanol/ethanol.cell"

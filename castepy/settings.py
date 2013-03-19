@@ -4,7 +4,7 @@ CASTEPY_ROOT, _ = os.path.split(os.path.realpath(__file__))
 
 USER_EMAIL = "tim.green@materials.ox.ac.uk"
 
-PLATFORM = "hector"
+PLATFORM = os.getenv('CASTEPY_PLATFORM')
 
 cluster_pspot_dir = {'hector': "/home/e89/e89/green/work/ncp_pspot",
                      'ironman': "/home/green/scratch/ncp_pspot",

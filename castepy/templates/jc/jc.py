@@ -6,9 +6,9 @@ import pipes
 
 import castepy.settings as settings
 
-from castepy import castepy, cell, pot
+from castepy.input import cell, pot
 from castepy.calc import CastepCalc
-from castepy.util import calc_from_path
+from castepy.utils import calc_from_path
 
 from castepy.templates.submission_scripts import get_submission_script
 

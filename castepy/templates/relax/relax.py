@@ -1,11 +1,10 @@
 import sys, os
 import shutil
 
-from castepy import castepy
-from castepy import constraint
-from castepy import cell
+from castepy.input import constraint
+from castepy.input import cell
 from castepy import calc
-from castepy.util import calc_from_path
+from castepy.utils import calc_from_path
 
 relax_path = "/home/green/pylib/castepy/templates/relax"
 merge_cell = cell.Cell(open(os.path.join(relax_path, "relax.cell")).read())

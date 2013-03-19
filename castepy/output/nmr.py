@@ -4,10 +4,10 @@ import re
 import math
 import numpy
 
-from cell import Cell
+from castepy.input.cell import Cell
 from magres.format import MagresFile
 
-from magres_constants import gamma_common, efg_to_Cq
+from castepy.magres_constants import gamma_common, efg_to_Cq
 
 def tensor_properties(matrix):
   m = numpy.mat(numpy.reshape(matrix, (3,3)))

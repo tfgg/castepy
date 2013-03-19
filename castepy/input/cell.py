@@ -1,7 +1,7 @@
 import re
 import numpy
 import math
-from ion import Ion, Ions, least_mirror
+from castepy.ion import Ion, Ions, least_mirror
 
 class Cell:
     class LatticeNotImplemented(Exception): pass

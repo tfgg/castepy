@@ -1,15 +1,18 @@
-#!/home/green/bin/python
+#!/usr/bin/env python
+
 import castepy.report
 
 import os
 import sys
-from castepy.cell import Cell
+import numpy
+
+from castepy.input.cell import Cell
 from castepy.calc import CastepCalc, calcs_on_path
-import castepy.bonds as bonds
-from castepy.nmr import MagresResult
+
+import castepy.output.bonds as bonds
+from castepy.output.nmr import MagresResult
 
 from castepy.magres_constants import K_to_J, gamma_iso
-import numpy
 
 cwd = ["."]
 if len(sys.argv)>1:
