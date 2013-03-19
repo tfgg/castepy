@@ -1,0 +1,29 @@
+#!/bin/bash --login
+#PBS -N %(seedname)s
+#PBS -V
+#PBS -l mppwidth=%(num_cores)d
+#PBS -l mppnppn=%(num_cores)d
+#PBS -l walltime=00:15:00
+#PBS -A e89-ox_m
+
+# Make sure any symbolic links are resolved to absolute path
+export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)
+
+# Change to the directory that the job was submitted from
+cd $PBS_O_WORKDIR
+
+# Load the CASTEP module
+#module add castep
+
+# This line sets the temporary directory - without it CASTEP will fail
+export GFORTRAN_TMPDIR=$PBS_O_WORKDIR
+
+# Set the number of threads to 1
+#   This prevents any system libraries from automatically 
+#   using threading.
+export OMP_NUM_THREADS=1
+
+# Change the name of the input file to match your own job
+aprun -n %(num_cores)d -N %(num_cores)d %(code)s %(seedname)s
+
+
