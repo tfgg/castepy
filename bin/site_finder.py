@@ -45,6 +45,8 @@ for i in range(1):
   classification = classify(points, means)
   
 
+  print classification
+
   sites = {('F', 13): 'F1',
            ('F', 1): 'F2',
            ('F', 9): 'F3',

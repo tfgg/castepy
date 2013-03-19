@@ -134,7 +134,7 @@ class Cell:
         self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (ion.s, ion.p[0], ion.p[1], ion.p[2]) for ion in self.ions.ions]
 
     def regen_lattice_block(self):
-        self.blocks[self.lattice_type] = [self.lattice_units] + ["%f %f %f" % (a,b,c) for a,b,c in self.lattice]
+        self.blocks[self.lattice_type] = [self.lattice_units] + ["%f %f %f" % (a,b,c) for a,b,c in self.ions.lattice]
 
     def jcoupling_shift_origin(self):
         """ Hack to move the perturbing NMR nucleus onto the origin """
@@ -181,7 +181,7 @@ class Cell:
       min_p = None
      
       for ion in self.ions:
-        d2,p = least_mirror(ion.p, q, self.basis, self.lattice)
+        d2,p = least_mirror(ion.p, q, self.basis, self.ions.lattice)
 
         if min_d2 is None or d2 < min_d2:
           min_d2 = d2
@@ -191,7 +191,7 @@ class Cell:
       return (min_ion, math.sqrt(min_d2), min_p)
 
     def least_mirror(self, p, q):
-      return least_mirror(p, q, self.basis, self.lattice)
+      return least_mirror(p, q, self.ions.basis, self.ions.lattice)
 
     def neighbours(self, q, max_dist=None, above_index=0, species=None):
       """

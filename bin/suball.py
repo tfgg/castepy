@@ -1,17 +1,7 @@
 #!/home/green/bin/python
 
 import sys, os
-
-# Generate a script to submit all submission scripts found below a certain directory
-def make_submit_all_script(root_dir, runs):
-  script_path = os.path.join(root_dir, "submit_all.sh")
-  script = open(script_path, "w+")
-
-  for target_dir, name in runs:
-    print >>script, "cd %s" % target_dir
-    print >>script, "qsub %s" % name
-    print >>script, "cd .."
-
+import pipes
 
 def find_all_ext(path, ext, found):
   for file in os.listdir(path):
@@ -42,8 +32,8 @@ if __name__ == "__main__":
   for script in found:
     dir, file = os.path.split(script)
 
-    print >>f_sh, "cd %s" % dir
-    print >>f_sh, "qsub %s" % file
-    print >>f_sh, "cd %s" % root_path
+    print >>f_sh, "cd %s" % pipes.quote(dir)
+    print >>f_sh, "qsub %s" % pipes.quote(file)
+    print >>f_sh, "cd %s" % pipes.quote(root_path)
 
   os.chmod(script_path, 0755)

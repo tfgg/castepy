@@ -2,6 +2,7 @@ import sys, os
 import shutil
 import re
 import random
+import pipes
 
 import castepy.settings as settings
 from castepy import castepy, cell, pot
@@ -77,7 +78,7 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
   #queue = random.choice(["parallel.q", "parallel.q", "long.q"])
   queue = "parallel.q"
   
-  sh_context = {'seedname': target_name,
+  sh_context = {'seedname': pipes.quote(target_name),
                 'CASTEPY_ROOT': settings.CASTEPY_ROOT,
                 'USER_EMAIL': settings.USER_EMAIL,
                 'num_cores': num_cores,

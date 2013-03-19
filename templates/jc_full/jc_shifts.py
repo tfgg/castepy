@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     calc.cell.ions.translate_origin((x*0.529177,x*0.529177,x*0.529177))
      
-    jc.make(source_dir, name, target_dir, name, s, i, True, calc.cell)
+    jc.make(source_dir, name, target_dir, name, s, i, True, calc.cell, num_cores=8)
     runs.append((run_dir, name))
 
   make_submit_all_script(target_dir_prefix, runs)
