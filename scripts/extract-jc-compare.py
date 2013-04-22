@@ -8,7 +8,6 @@ import castepy.report
 
 import os
 import sys
-from castepy.input.cell import Cell
 from castepy.calc import CastepCalc
 from castepy.util import find_all_calcs, calc_from_path
 from castepy.magres_constants import K_to_J, gamma_iso

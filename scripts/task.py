@@ -13,10 +13,12 @@ tasks = {'jc': path('templates/jc/jc.py'),
          'relax-full': path('templates/relax/relax-full.py'),
          'copy': path('templates/copy/copy.py'),
          'nmr': path('templates/nmr/nmr.py'),
+         'psptest': path('templates/psptest/psptest.py'),
          'spectral': path('templates/spectral/spectral.py'),
          'python': path('templates/python/python.py'),}
 
-def make_task(task, source_dir, source_name, target_dir, **kwargs):
+
+def make_task(task, *args, **kwargs):
   module_path = tasks[task]
   module_dir, module_file = os.path.split(module_path)
   module_name, _ = os.path.splitext(module_file)
@@ -25,7 +27,9 @@ def make_task(task, source_dir, source_name, target_dir, **kwargs):
   
   m = __import__(module_name)
 
-  m.make(source_dir, source_name, target_dir, **kwargs)
+  #source_dir, source_name, target_dir, 
+
+  m.make(*args, **kwargs)
 
 def inquire_num_cores():
   num_cores = 32
@@ -44,11 +48,11 @@ if __name__ == "__main__":
     sys.exit()
 
   task = str(sys.argv[1])
-  source_path = str(sys.argv[2])
-  source_dir, source_name = calc_from_path(source_path)
-  target_dir = str(sys.argv[3])
+  #source_path = str(sys.argv[2])
+  #source_dir, source_name = calc_from_path(source_path)
+  #target_dir = str(sys.argv[3])
 
   num_cores = inquire_num_cores()
 
-  make_task(task, source_dir, source_name, target_dir, num_cores=num_cores)
+  make_task(task, *sys.argv[2:], num_cores=num_cores)
 

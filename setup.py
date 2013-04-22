@@ -30,8 +30,6 @@ def data_files(dir):
 
   return data_files
   
-print relative_find('castepy', 'templates')
-  
 setup(name='Castepy',
       version='0.9',
       description='Helper scripts for using and processing Castep jobs, particularly magnetic resonance',

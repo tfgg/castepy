@@ -18,6 +18,7 @@ def make(source_dir, source_name, target_dir, target_name=None, c=None, **kwargs
     c = cell.Cell(calc.cell_file)
 
   c.other += merge_cell.other
+  c.blocks.update(merge_cell.blocks)
 
   if target_name is None:
     target_name = source_name

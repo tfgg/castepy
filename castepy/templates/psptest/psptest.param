@@ -1,8 +1,8 @@
 xcfunctional = PBE 
 opt_strategy : speed
-task        = magres
-magres_task = efg
-cut_off_energy  = 50 ry
+task        = singlepoint
+cut_off_energy  = 80 ry
+nextra_bands: 20
 
 !fix_occupancy: true
 bs_max_cg_steps : 5

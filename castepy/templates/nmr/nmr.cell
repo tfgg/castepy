@@ -1,4 +1,5 @@
-kpoint_mp_spacing 0.06
+kpoint_mp_grid 1 1 1
+kpoint_mp_offset 0.25 0.25 0.25
 
 %block SPECIES_POT
 Pb  3|2.4|2.35|1.6|9.2|12.9|16.5|60UU:61UU:52UU[]

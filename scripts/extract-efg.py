@@ -5,7 +5,7 @@ import sys
 
 from castepy.calc import CastepCalc
 from castepy.util import find_all_calcs, calc_from_path
-from castepy.magres_constants import K_to_J
+from castepy.magres_constants import efg_to_Cq
 
 import numpy
 
@@ -30,12 +30,12 @@ for dir, name in calcs:
   calc.load(exclude=['bonds'])
 
   try:
-    getattr(calc.magres, 'ms')
+    getattr(calc.magres, 'efg')
   except:
-    print "# Magnetic shielding not found for %s %s" % (dir,name)
+    print "# EFG not found for %s %s" % (dir,name)
     continue
 
-  for s1,i1,ms_tensor in calc.magres.ms:
+  for s1,i1,efg_tensor in calc.magres.efg:
     if (s1 == find_s1 or s1 is None) and (i1 == find_i1 or find_i1 is None):
-      print dir,name,"%s%d" % (s1,i1), numpy.trace(ms_tensor)/3.0
+      print dir,name,"%s%d" % (s1,i1), efg_to_Cq(efg_tensor, s1) 
 

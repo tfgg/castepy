@@ -3,6 +3,7 @@ import os, sys
 from input.parameters import Parameters
 from input.cell import Cell
 from output.nmr import MagresResult
+from magres.oldmagres import OldMagres
 
 from output.finished import error_check, castep_finished
 
@@ -100,7 +101,14 @@ class CastepCalc:
 
     if hasattr(self, 'magres_file') and "magres" in to_load:
       self.magres = MagresResult(self.magres_file)
-      #self.magres.annotate(self.cell.ions)
+
+      # Nothing there? Try using the old-style parser
+      if self.magres.magres_file.data_dict == {}:
+        old_magres_file = OldMagres(self.magres_file, self.castep_file)
+        #self.magres_file.data_dict = old_magres_file.as_new_format()
+        self.magres.magres_file = old_magres_file.as_new_format()
+
+        print self.magres
 
     if hasattr(self, 'castep_file') and "bonds" in to_load:
         try:
