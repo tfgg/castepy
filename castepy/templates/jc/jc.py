@@ -18,9 +18,40 @@ merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
 
 regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 
-def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc='pbe', usp_pot=False, c=None, **kwargs):
+import argparse
+
+parser = argparse.ArgumentParser(description='Create a CASTEP J-coupling calculation.')
+parser.add_argument('source', help='A cell file to build the calculation from.')
+parser.add_argument('target_dir', help='A directory to build the calculation in.')
+parser.add_argument('-n', '--num_cores', type=int, help='Number of cores to use.', default=32)
+parser.add_argument('-q', '--queue', type=str, help='SGE queue to use.', default="parallel.q")
+parser.add_argument('-s', '--jc_s', help='Target J-coupling site species', type=str)
+parser.add_argument('-i', '--jc_i', help='Target J-coupling site species index', type=int)
+parser.add_argument('-r', '--rel_pot', action="store_const", help='Use relativity', default=False, const=True)
+parser.add_argument('-u', '--usp_pot', action="store_const", help='Use ultrasoft potentials', default=False, const=True)
+parser.add_argument('-x', '--xc_functional', nargs=1, help='The XC functional to use', default=["PBE"])
+
+def make_command(args):
+  a = parser.parse_args(args)
+
+  print a.__dict__
+
+  make(a.source,
+       a.target_dir,
+       num_cores=a.num_cores,
+       jc_s=a.jc_s,
+       jc_i=a.jc_i,
+       rel_pot=a.rel_pot,
+       usp_pot=a.usp_pot,
+       xc_functional=a.xc_functional[0],
+       queue=a.queue)
+
+def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc_functional='pbe', usp_pot=False, c=None, queue="parallel.q", **kwargs):
+
   source_dir, source_name = calc_from_path(source)
   calc = CastepCalc(source_dir, source_name)
+
+  xc_functional = xc_functional.lower()
 
   if c is None:
     c = cell.Cell(calc.cell_file)
@@ -28,9 +59,9 @@ def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=Fal
   if usp_pot:
     pot.add_potentials_usp(c)
   else:
-    if xc == 'pbe':
+    if xc_functional == 'pbe':
       _, required_files = pot.add_potentials(settings.NCP_PSPOT_PBE_DIR, None, c, rel_pot)
-    elif xc == 'lda':
+    elif xc_functional == 'lda':
       _, required_files = pot.add_potentials(settings.NCP_PSPOT_LDA_DIR, None, c, rel_pot)
 
     pot.link_files(required_files, target_dir)
@@ -64,7 +95,6 @@ def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=Fal
     c.other.append("jcoupling_site: %s %d" % (jc_s, jc_i))
     c.otherdict['jcoupling_site'] = "%s %d" % (jc_s, jc_i)
 
-  #c.jcoupling_shift_origin()
   c.ions.translate_origin([0.001, 0.001, 0.001])
 
   if 'KPOINTS_LIST' in c.blocks:
@@ -79,19 +109,11 @@ def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=Fal
   param_target = os.path.join(target_dir, "%s.param" % target_name)
   sh_target = os.path.join(target_dir, "%s.sh" % target_name)
 
-  if xc == 'pbe':
+  if xc_functional == 'pbe':
     shutil.copyfile(os.path.join(jc_path, "jc.param"), param_target)
-  elif xc == 'lda':
+  elif xc_functional == 'lda':
     shutil.copyfile(os.path.join(jc_path, "jc-lda.param"), param_target)
 
-  if 'num_cores' in kwargs:
-    num_cores = kwargs['num_cores']
-  else:
-    num_cores = 32
-
-  #queue = random.choice(["parallel.q", "parallel.q", "long.q"])
-  queue = "parallel.q"
-  
   sh_context = {'seedname': pipes.quote(target_name),
                 'CASTEPY_ROOT': settings.CASTEPY_ROOT,
                 'USER_EMAIL': settings.USER_EMAIL,
@@ -99,8 +121,6 @@ def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=Fal
                 'h_vmem': float(num_cores)/8 * 23,
                 'queue': queue,
                 'code': 'castep-jc'}
-
-  print sh_context
 
   sh_source = get_submission_script()
   sh_target_file = open(sh_target, "w+")
@@ -114,8 +134,5 @@ def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=Fal
   print >>cell_out, str(c)
 
 if __name__ == "__main__":
-  dir, name = calc_from_path(sys.argv[1])
-  target_dir = str(sys.argv[2])
-
-  make(dir, name, target_dir)
+  make_command(sys.argv[1:])
 

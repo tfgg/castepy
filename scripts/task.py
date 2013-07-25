@@ -1,15 +1,15 @@
 #!/usr/bin/python
 
-import os, sys
+import os, sys, getopt
 from castepy.input.cell import Cell
 from castepy.util import calc_from_path, path
 
 import castepy.settings as settings
 
 tasks = {'jc': path('templates/jc/jc.py'),
-         'jc-rel': path('templates/jc/jc_rel.py'),
-         'jc-usp': path('templates/jc/jc_usp.py'),
-         'jc-lda': path('templates/jc/jc_lda.py'),
+         #'jc-rel': path('templates/jc/jc_rel.py'),
+         #'jc-usp': path('templates/jc/jc_usp.py'),
+         #'jc-lda': path('templates/jc/jc_lda.py'),
          'jc-full': path('templates/jc_full/jc_full.py'),
          'relax-H': path('templates/relax/relax.py'),
          'relax-full': path('templates/relax/relax-full.py'),
@@ -20,7 +20,7 @@ tasks = {'jc': path('templates/jc/jc.py'),
          'python': path('templates/python/python.py'),}
 
 
-def make_task(task, *args, **kwargs):
+def make_task(task, args):
   module_path = tasks[task]
   module_dir, module_file = os.path.split(module_path)
   module_name, _ = os.path.splitext(module_file)
@@ -31,7 +31,7 @@ def make_task(task, *args, **kwargs):
 
   #source_dir, source_name, target_dir, 
 
-  m.make(*args, **kwargs)
+  m.make_command(args)
 
 def inquire_num_cores():
   num_cores = 32
@@ -50,11 +50,6 @@ if __name__ == "__main__":
     sys.exit()
 
   task = str(sys.argv[1])
-  #source_path = str(sys.argv[2])
-  #source_dir, source_name = calc_from_path(source_path)
-  #target_dir = str(sys.argv[3])
 
-  num_cores = inquire_num_cores()
-
-  make_task(task, *sys.argv[2:], num_cores=num_cores)
+  make_task(task, sys.argv[2:])
 
