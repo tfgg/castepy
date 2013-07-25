@@ -11,7 +11,8 @@ nmr_path = os.path.join(settings.CASTEPY_ROOT, "templates/nmr")
 
 merge_cell = cell.Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
 
-def make(source_dir, source_name, target_dir, target_name=None, c=None, **kwargs):
+def make(source, target_dir, target_name=None, c=None, **kwargs):
+  source_dir, source_name = calc_from_path(source)
   calc = CastepCalc(source_dir, source_name)
   
   if c is None:

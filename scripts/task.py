@@ -8,6 +8,8 @@ import castepy.settings as settings
 
 tasks = {'jc': path('templates/jc/jc.py'),
          'jc-rel': path('templates/jc/jc_rel.py'),
+         'jc-usp': path('templates/jc/jc_usp.py'),
+         'jc-lda': path('templates/jc/jc_lda.py'),
          'jc-full': path('templates/jc_full/jc_full.py'),
          'relax-H': path('templates/relax/relax.py'),
          'relax-full': path('templates/relax/relax-full.py'),

@@ -11,6 +11,17 @@ def calc_from_path(path):
 
   return (dir, name)
 
+def find_all(dir, suffix=".cell"):
+  calcs = []
+  for f in os.listdir(dir):
+    path = os.path.join(dir, f)
+    if f.endswith(suffix):
+      calcs.append(path)
+    elif os.path.isdir(path):
+      calcs += find_all(path, suffix)
+  
+  return calcs
+
 def find_all_calcs(dir):
   calcs = []
   for f in os.listdir(dir):

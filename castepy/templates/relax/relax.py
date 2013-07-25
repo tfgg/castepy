@@ -5,11 +5,14 @@ from castepy.input import constraint
 from castepy.input import cell
 from castepy import calc
 from castepy.utils import calc_from_path
+import castepy.settings as settings
 
-relax_path = "/home/green/pylib/castepy/templates/relax"
+relax_path = os.path.join(settings.CASTEPY_ROOT, "templates/relax")
 merge_cell = cell.Cell(open(os.path.join(relax_path, "relax.cell")).read())
 
-def make(source_dir, source_name, target_dir, target_name=None, relax_species=["H","F"], **kwargs):
+def make(source, target_dir, target_name=None, relax_species=["H"], **kwargs):
+  source_dir, source_name = calc_from_path(source)
+  
   cal = calc.CastepCalc(source_dir, source_name)
   c = cell.Cell(cal.cell_file)
   if relax_species is None:

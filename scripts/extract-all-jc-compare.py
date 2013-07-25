@@ -52,7 +52,13 @@ for dir, name in calcs:
       continue
 
   for tensor in tensors:
-    for s1,i1,s2,i2,K_tensor in getattr(calc.magres, tensor):
+    for isc_coupling in getattr(calc.magres, tensor):
+      s1 = isc_coupling['atom1']['label']
+      i1 = isc_coupling['atom1']['index']
+      s2 = isc_coupling['atom2']['label']
+      i2 = isc_coupling['atom2']['index']
+      K_tensor = isc_coupling['K']
+
       if (find_s is None and find_i is None) or (s2 == find_s and i2 == find_i) or (s1 == find_s and i1 == find_i) and (find_s2 is None or s2 == find_s2):
 
         if (s1,i1,s2,i2) not in all_Js:

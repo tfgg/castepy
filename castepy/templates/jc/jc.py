@@ -18,15 +18,22 @@ merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
 
 regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 
-def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, c=None, **kwargs):
+def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc='pbe', usp_pot=False, c=None, **kwargs):
   source_dir, source_name = calc_from_path(source)
   calc = CastepCalc(source_dir, source_name)
 
   if c is None:
     c = cell.Cell(calc.cell_file)
 
-  _, required_files= pot.add_potentials(settings.NCP_PSPOT_DIR, None, c, rel_pot)
-  pot.link_files(required_files, target_dir)
+  if usp_pot:
+    pot.add_potentials_usp(c)
+  else:
+    if xc == 'pbe':
+      _, required_files = pot.add_potentials(settings.NCP_PSPOT_PBE_DIR, None, c, rel_pot)
+    elif xc == 'lda':
+      _, required_files = pot.add_potentials(settings.NCP_PSPOT_LDA_DIR, None, c, rel_pot)
+
+    pot.link_files(required_files, target_dir)
 
   c.other = []
 
@@ -72,7 +79,10 @@ def make(source, target_dir, target_name=None, jc_s=None, jc_i=None, rel_pot=Fal
   param_target = os.path.join(target_dir, "%s.param" % target_name)
   sh_target = os.path.join(target_dir, "%s.sh" % target_name)
 
-  shutil.copyfile(os.path.join(jc_path, "jc.param"), param_target)
+  if xc == 'pbe':
+    shutil.copyfile(os.path.join(jc_path, "jc.param"), param_target)
+  elif xc == 'lda':
+    shutil.copyfile(os.path.join(jc_path, "jc-lda.param"), param_target)
 
   if 'num_cores' in kwargs:
     num_cores = kwargs['num_cores']
