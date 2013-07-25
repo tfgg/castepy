@@ -3,6 +3,7 @@ import shutil
 import re
 import random
 import pipes
+import itertools
 
 import castepy.settings as settings
 
@@ -26,28 +27,60 @@ parser.add_argument('source', help='A cell file to build the calculation from.')
 parser.add_argument('target_dir', help='A directory to build the calculation in.')
 parser.add_argument('-n', '--num_cores', type=int, help='Number of cores to use.', default=32)
 parser.add_argument('-q', '--queue', type=str, help='SGE queue to use.', default="parallel.q")
-parser.add_argument('-s', '--jc_s', help='Target J-coupling site species', type=str)
-parser.add_argument('-i', '--jc_i', help='Target J-coupling site species index', type=int)
+parser.add_argument('-s', '--site', help='Target J-coupling site(s), separated by commas.', type=str)
 parser.add_argument('-r', '--rel_pot', action="store_const", help='Use relativity', default=False, const=True)
 parser.add_argument('-u', '--usp_pot', action="store_const", help='Use ultrasoft potentials', default=False, const=True)
-parser.add_argument('-x', '--xc_functional', help='The XC functional to use', default="PBE")
-parser.add_argument('-c', '--cut_off_energy', type=int, help='The cut-off energy to use (Rydberg)', default=80)
+parser.add_argument('-x', '--xc_functional', help='The XC functional(s) to use, separated by commas.', default="PBE")
+parser.add_argument('-c', '--cut_off_energy', type=str, help='The cut-off energy(s) to use (Rydberg), separated by commas.', default="80")
 
 def make_command(args):
   a = parser.parse_args(args)
 
   print a.__dict__
 
-  make(a.source,
-       a.target_dir,
-       num_cores=a.num_cores,
-       jc_s=a.jc_s,
-       jc_i=a.jc_i,
-       rel_pot=a.rel_pot,
-       usp_pot=a.usp_pot,
-       xc_functional=a.xc_functional,
-       cut_off_energy=a.cut_off_energy,
-       queue=a.queue)
+  sites = []
+  if a.site is not None:
+    for site in a.site.split(","):
+      sites.append(regex_species.findall(site)[0])
+  else:
+    sites = [None]
+
+  cut_off_energies = map(int,a.cut_off_energy.split(","))
+  xc_functionals = [s.lower() for s in a.xc_functional.split(",")]
+
+  param_prod = list(itertools.product(sites, cut_off_energies,xc_functionals))
+
+  print param_prod
+
+  for site, cut_off_energy,xc_functional in param_prod:
+    if len(param_prod) == 1:
+      target_dir = a.target_dir
+    else:
+      if site is not None:
+        target_dir = os.path.join(a.target_dir, "%s-%dry-%s" % ("".join(site), cut_off_energy, xc_functional))
+      else:
+        target_dir = os.path.join(a.target_dir, "%dry-%s" % (cut_off_energy, xc_functional))
+     
+      if not os.path.isdir(target_dir):
+        os.mkdir(target_dir)
+
+    if site is not None:
+      jc_s, jc_i = site
+      jc_i = int(jc_i)
+    else:
+      jc_s = None
+      jc_i = None
+
+    make(a.source,
+         target_dir,
+         num_cores=a.num_cores,
+         jc_s=jc_s,
+         jc_i=jc_i,
+         rel_pot=a.rel_pot,
+         usp_pot=a.usp_pot,
+         xc_functional=xc_functional,
+         cut_off_energy=cut_off_energy,
+         queue=a.queue)
 
 def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc_functional='pbe', cut_off_energy=80, usp_pot=False, c=None, queue="parallel.q", **kwargs):
 
