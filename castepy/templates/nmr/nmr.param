@@ -1,4 +1,4 @@
-xcfunctional = PBE 
+xc_functional = PBE 
 opt_strategy : speed
 task        = magres
 magres_task = efg

@@ -66,6 +66,8 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
       _, required_files = pot.add_potentials(settings.NCP_PSPOT_PBE_DIR, None, c, rel_pot)
     elif xc_functional == 'lda':
       _, required_files = pot.add_potentials(settings.NCP_PSPOT_LDA_DIR, None, c, rel_pot)
+    else:
+      raise Exception("Cannot use XC functional %s with NCPs" % xc_functional)
 
     pot.link_files(required_files, target_dir)
 

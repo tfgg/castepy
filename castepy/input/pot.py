@@ -32,7 +32,7 @@ def add_potentials(pot_dir, dir_path, cell_file, rel=False):
   c.blocks['SPECIES_POT'] = species_pot
   return (c, required_files)
 
-def add_potentials_usp(cell_file):
+def add_potentials_usp(cell_file, rel=False):
   if cell_file.__class__ != Cell:
     c = Cell(open(cell_file).read())
   else:
@@ -40,10 +40,18 @@ def add_potentials_usp(cell_file):
  
   def make_schro(usp_s):
     return usp_s.replace(')', ',schro)')
+  
+  def make_dirac(usp_s):
+    return usp_s.replace(')', ',dirac)')
 
-  species_pot = []
-  for s, n in c.ions.species():
-    species_pot.append("%s %s" % (s, make_schro(otfg[s])))
+  if rel:
+    species_pot = []
+    for s, n in c.ions.species():
+      species_pot.append("%s %s" % (s, make_dirac(otfg[s])))
+  else:
+    species_pot = []
+    for s, n in c.ions.species():
+      species_pot.append("%s %s" % (s, make_schro(otfg[s])))
 
   c.blocks['SPECIES_POT'] = species_pot
 
