@@ -23,13 +23,13 @@ regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 import argparse
 
 parser = argparse.ArgumentParser(description='Create a CASTEP J-coupling calculation.')
-parser.add_argument('source', help='A cell file to build the calculation from.')
-parser.add_argument('target_dir', help='A directory to build the calculation in.')
+parser.add_argument('target_dir', help='Directory to build the calculation(s) in.')
+parser.add_argument('source', nargs=argparse.REMAINDER, help='Cell file(s) to build the calculation from.')
 parser.add_argument('-n', '--num_cores', type=int, help='Number of cores to use.', default=32)
 parser.add_argument('-q', '--queue', type=str, help='SGE queue to use.', default="parallel.q")
 parser.add_argument('-s', '--site', help='Target J-coupling site(s), separated by commas.', type=str)
-parser.add_argument('-r', '--rel_pot', action="store_const", help='Use relativity', default=False, const=True)
-parser.add_argument('-u', '--usp_pot', action="store_const", help='Use ultrasoft potentials', default=False, const=True)
+parser.add_argument('-r', '--rel', action="store_const", help='Use relativity', default=False, const=True)
+parser.add_argument('-p', '--pot', choices=["usp","ncp"], help='What type(s) of pseudopotentials to use, separated by commas.', default="ncp")
 parser.add_argument('-x', '--xc_functional', help='The XC functional(s) to use, separated by commas.', default="PBE")
 parser.add_argument('-c', '--cut_off_energy', type=str, help='The cut-off energy(s) to use (Rydberg), separated by commas.', default="80")
 
@@ -47,22 +47,42 @@ def make_command(args):
 
   cut_off_energies = map(int,a.cut_off_energy.split(","))
   xc_functionals = [s.lower() for s in a.xc_functional.split(",")]
+  pots = a.pot.split(",")
+  sources = a.source
 
-  param_prod = list(itertools.product(sites, cut_off_energies,xc_functionals))
+  param_prod = list(itertools.product(sources, sites, cut_off_energies, xc_functionals, pots))
 
   print param_prod
 
-  for site, cut_off_energy,xc_functional in param_prod:
-    if len(param_prod) == 1:
-      target_dir = a.target_dir
-    else:
-      if site is not None:
-        target_dir = os.path.join(a.target_dir, "%s-%dry-%s" % ("".join(site), cut_off_energy, xc_functional))
-      else:
-        target_dir = os.path.join(a.target_dir, "%dry-%s" % (cut_off_energy, xc_functional))
-     
-      if not os.path.isdir(target_dir):
-        os.mkdir(target_dir)
+  for source,site,cut_off_energy,xc_functional,pot in param_prod:
+
+    source_dir, source_name = calc_from_path(source)
+    # [rel/nrel]/[usp/ncp]/[xc_functional]/[structure]/[cutoff]/[site]
+
+    dir_path = [a.target_dir]
+
+    if len(pots) > 1:
+      dir_path.append(pot)
+    
+    if len(xc_functionals) > 1:
+      dir_path.append(xc_functional)
+
+    if len(sources) > 1:
+      dir_path.append(source_name)
+
+    if len(cut_off_energies) > 1:
+      dir_path.append("%dry" % cut_off_energy)
+
+    if len(sites) > 1:
+      dir_path.append("".join(site))
+
+    for i in range(len(dir_path)):
+      d = os.path.join(dir_path[:i+1])
+
+      if not os.path.isdir(d):
+        os.mkdir(d)
+
+    target_dir = os.path.join(dir_path)
 
     if site is not None:
       jc_s, jc_i = site
@@ -71,13 +91,18 @@ def make_command(args):
       jc_s = None
       jc_i = None
 
-    make(a.source,
+    if pot == "usp":
+      usp_pot = True
+    elif pot == "ncp":
+      usp_pot = False
+
+    make(source,
          target_dir,
          num_cores=a.num_cores,
          jc_s=jc_s,
          jc_i=jc_i,
-         rel_pot=a.rel_pot,
-         usp_pot=a.usp_pot,
+         rel_pot=a.rel,
+         usp_pot=usp_pot,
          xc_functional=xc_functional,
          cut_off_energy=cut_off_energy,
          queue=a.queue)
