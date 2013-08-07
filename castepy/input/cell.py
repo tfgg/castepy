@@ -7,7 +7,7 @@ class Cell:
     class LatticeNotImplemented(Exception): pass
     class LatticeWrongShape(Exception): pass
 
-    def __init__(self, cell_file=None):
+    def __init__(self, cell_file=None, **kwargs):
         self.blocks = {}
         self.other = []
         self.otherdict = {}
@@ -16,6 +16,18 @@ class Cell:
 
         if cell_file is not None:
             self.parse_cell(cell_file)
+
+        if 'lattice' in kwargs:
+          self.lattice_units = "ang"
+          self.lattice_type = "LATTICE_CART"
+          self.lattice = numpy.array(kwargs['lattice'])
+          self.ions.lattice = self.lattice
+
+          self.ions_units = "ang"
+          self.ions_type = "POSITIONS_ABS"
+          self.basis = numpy.array([[1.0, 0.0, 0.0],
+                                    [0.0, 1.0, 0.0],
+                                    [0.0, 0.0, 1.0]])
 
     def parse_cell(self, cell):
         block_re = re.compile(r"%block (.*?)\n(.*?\n{0,})%endblock (.*?)\n", re.I | re.S | re.M)

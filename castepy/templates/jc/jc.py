@@ -52,8 +52,6 @@ def make_command(args):
 
   param_prod = list(itertools.product(sources, sites, cut_off_energies, xc_functionals, pots))
 
-  print param_prod
-
   for source,site,cut_off_energy,xc_functional,pot in param_prod:
 
     source_dir, source_name = calc_from_path(source)
@@ -76,13 +74,15 @@ def make_command(args):
     if len(sites) > 1:
       dir_path.append("".join(site))
 
+    print dir_path
+
     for i in range(len(dir_path)):
-      d = os.path.join(dir_path[:i+1])
+      d = os.path.join(*dir_path[:i+1])
 
       if not os.path.isdir(d):
         os.mkdir(d)
 
-    target_dir = os.path.join(dir_path)
+    target_dir = os.path.join(*dir_path)
 
     if site is not None:
       jc_s, jc_i = site

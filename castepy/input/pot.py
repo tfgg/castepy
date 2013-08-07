@@ -3,6 +3,7 @@
 
 import os
 import sys
+import re
 
 from castepy.input.cell import Cell
 
@@ -32,26 +33,26 @@ def add_potentials(pot_dir, dir_path, cell_file, rel=False):
   c.blocks['SPECIES_POT'] = species_pot
   return (c, required_files)
 
-def add_potentials_usp(cell_file, rel=False):
+def add_potentials_usp(cell_file, rel=False, type='schro'):
   if cell_file.__class__ != Cell:
     c = Cell(open(cell_file).read())
   else:
     c = cell_file
  
-  def make_schro(usp_s):
-    return usp_s.replace(')', ',schro)')
+  def make_lab(usp_s, type):
+    if '(' in usp_s:
+      return usp_s.replace(')', ',%s)' % type)
+    else:
+      return usp_s.replace('[', '(%s)[' % type)
   
-  def make_dirac(usp_s):
-    return usp_s.replace(')', ',dirac)')
-
   if rel:
     species_pot = []
     for s, n in c.ions.species():
-      species_pot.append("%s %s" % (s, make_dirac(otfg[s])))
+      species_pot.append("%s %s" % (s, make_lab(otfg[s], type)))
   else:
     species_pot = []
     for s, n in c.ions.species():
-      species_pot.append("%s %s" % (s, make_schro(otfg[s])))
+      species_pot.append("%s %s" % (s, make_lab(otfg[s], type)))
 
   c.blocks['SPECIES_POT'] = species_pot
 
@@ -67,6 +68,36 @@ def link_files(required_files, dir_path):
 
       if not os.path.isfile(target):
         os.symlink(f, target)
+
+class PspOtfg(object):
+  def __init__(self, otfg_str):
+    self.l_local = None
+    self.rc_local = None
+    self.rc_other = None
+    self.rc_aug = None
+    self.projectors = []
+    self.flags = []
+    self.flags_dict = {}
+
+    self.parse(otfg_str)
+
+  def parse(self, otfg_str):
+    pipesplit = otfg_str.split('|')
+
+    self.l_local = int(pipesplit[0])
+    self.rc_local = float(pipesplit[1])
+    self.rc_other = float(pipesplit[2])
+    self.rc_aug = float(pipesplit[3])
+
+    # projstr = pipesplit[-1][:pipesplit.index('(')].split(':')
+
+    if '(' in otfg_str:
+      self.flags = otfg_str[otfg_str.index('(')+1:otfg_str.index(')')].split(',')
+
+      for flag in self.flags:
+        if '=' in flag:
+          key, val = flag.split('=')
+          self.flags_dict[key] = val
 
 otfg = {'H':  "1|0.8|3.675|7.35|11.025|10UU(qc=6.4)[]",
       'He':  "1|0.8|0.8|0.6|14.7|16.5|20|10UU(qc=7)[]",
