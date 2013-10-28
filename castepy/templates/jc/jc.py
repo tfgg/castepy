@@ -1,5 +1,6 @@
 import sys, os
 import shutil
+import math
 import re
 import random
 import pipes
@@ -27,9 +28,9 @@ parser.add_argument('target_dir', help='Directory to build the calculation(s) in
 parser.add_argument('source', nargs=argparse.REMAINDER, help='Cell file(s) to build the calculation from.')
 parser.add_argument('-n', '--num_cores', type=int, help='Number of cores to use.', default=32)
 parser.add_argument('-q', '--queue', type=str, help='SGE queue to use.', default="parallel.q")
-parser.add_argument('-s', '--site', help='Target J-coupling site(s), separated by commas.', type=str)
+parser.add_argument('-s', '--site', help='Target J-coupling site(s), separated by commas. Warning if site not present in structure.', type=str)
 parser.add_argument('-r', '--rel', action="store_const", help='Use relativity', default=False, const=True)
-parser.add_argument('-p', '--pot', choices=["usp","ncp"], help='What type(s) of pseudopotentials to use, separated by commas.', default="ncp")
+parser.add_argument('-p', '--pot', help='What type(s) of pseudopotentials to use, separated by commas.', type=str, default="ncp")
 parser.add_argument('-x', '--xc_functional', help='The XC functional(s) to use, separated by commas.', default="PBE")
 parser.add_argument('-c', '--cut_off_energy', type=str, help='The cut-off energy(s) to use (Rydberg), separated by commas.', default="80")
 
@@ -76,11 +77,14 @@ def make_command(args):
 
     print dir_path
 
+    new_dir = False
+
     for i in range(len(dir_path)):
       d = os.path.join(*dir_path[:i+1])
 
       if not os.path.isdir(d):
         os.mkdir(d)
+        new_dir = True
 
     target_dir = os.path.join(*dir_path)
 
@@ -96,16 +100,29 @@ def make_command(args):
     elif pot == "ncp":
       usp_pot = False
 
-    make(source,
-         target_dir,
-         num_cores=a.num_cores,
-         jc_s=jc_s,
-         jc_i=jc_i,
-         rel_pot=a.rel,
-         usp_pot=usp_pot,
-         xc_functional=xc_functional,
-         cut_off_energy=cut_off_energy,
-         queue=a.queue)
+    try:
+      make(source,
+           target_dir,
+           num_cores=a.num_cores,
+           jc_s=jc_s,
+           jc_i=jc_i,
+           rel_pot=a.rel,
+           usp_pot=usp_pot,
+           xc_functional=xc_functional,
+           cut_off_energy=cut_off_energy,
+           queue=a.queue)
+    except SiteNotPresent, e:
+      print e
+
+      # If we've just made this directory, trash it
+      if new_dir:
+        shutil.rmtree(target_dir)
+
+class SiteNotPresent(Exception):
+  pass
+
+def round_cores_up(n, m):
+  return int(math.ceil(float(n)/m)*m)
 
 def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc_functional='pbe', cut_off_energy=80, usp_pot=False, c=None, queue="parallel.q", **kwargs):
 
@@ -118,7 +135,7 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
     c = cell.Cell(calc.cell_file)
 
   if usp_pot:
-    pot.add_potentials_usp(c)
+    pot.add_potentials_usp(c,rel_pot)
   else:
     if xc_functional == 'pbe':
       _, required_files = pot.add_potentials(settings.NCP_PSPOT_PBE_DIR, None, c, rel_pot)
@@ -153,7 +170,10 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
       jc_i = int(j_site[1])
 
   if jc_s is not None:
-    jc_ion = c.ions.get_species(jc_s, jc_i)
+    try:
+      jc_ion = c.ions.get_species(jc_s, jc_i)
+    except:
+      raise SiteNotPresent("Site %s %d not present" % (jc_s, jc_i))
   
     c.other.append("jcoupling_site: %s %d" % (jc_s, jc_i))
     c.otherdict['jcoupling_site'] = "%s %d" % (jc_s, jc_i)
@@ -180,11 +200,14 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
   else:
     code = "castep-jc"
 
+  num_round_cores = round_cores_up(num_cores, 8)
+
   sh_context = {'seedname': pipes.quote(target_name),
                 'CASTEPY_ROOT': settings.CASTEPY_ROOT,
                 'USER_EMAIL': settings.USER_EMAIL,
                 'num_cores': num_cores,
-                'h_vmem': float(num_cores)/8 * 23,
+                'num_round_cores': num_round_cores,
+                'h_vmem': float(num_round_cores)/8 * 23,
                 'queue': queue,
                 'code': code}
 

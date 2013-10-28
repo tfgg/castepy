@@ -1,7 +1,7 @@
 #!/bin/tcsh
 #$ -cwd
 #$ -j y
-#$ -pe orte %(num_cores)d
+#$ -pe orte %(num_round_cores)d
 #$ -V
 #$ -l qname=%(queue)s
 #$ -l h_vmem=%(h_vmem)fG
@@ -14,7 +14,10 @@ source /opt/gridengine/default/common/settings.csh
 echo Job using the following number of cores: $NSLOTS
 echo Job starting on: `date`
 
-mpirun --mca btl self,openib,sm,tcp -np $NSLOTS %(code)s %(seedname)s
+set MPIRUN   = mpirun
+set MPIFLAGS = --mca btl self,openib,sm,tcp
+
+$MPIRUN $MPIFLAGS -np %(num_cores)d %(code)s %(seedname)s
 
 echo Job ended at: `date`
 

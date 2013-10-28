@@ -34,6 +34,9 @@ def add_potentials(pot_dir, dir_path, cell_file, rel=False):
   return (c, required_files)
 
 def add_potentials_usp(cell_file, rel=False, type='schro'):
+  if rel:
+    type = 'zora'
+
   if cell_file.__class__ != Cell:
     c = Cell(open(cell_file).read())
   else:
@@ -171,7 +174,7 @@ otfg = {'H':  "1|0.8|3.675|7.35|11.025|10UU(qc=6.4)[]",
       'Pt':  "1|2.3|2.4|1|8.4|9.2|10.7|60U=-0.22:52U=-0.235U=+0[]",
       'Au':  "3|2|2|1.8|11.4|12.5|13.3|50U:60U:51UU:52UU(qc=5.5)[]",
       'Hg':  "1|2.2|2.2|1.7|11.8|13.6|15.3|60UU:61P:52UU[]",
-      'Tl':  "3|2.4|2.4|1.9|8.5|9.6|11|60UU:61U+0U+0.5:52UU(qc=4.5)[]",
+      'Tl':  "2|2.4|2.4|1.9|8.5|9.6|11|60UU:61U+0U+0.5:52UU(qc=4.5)[]",
       'Pb':  "3|2.4|2.35|1.6|9.2|12.9|16.5|60UU:61UU:52UU[]",
       'Bi':  "2|2.1|2.1|1.6|7|9.2|11|60U=-0.54U=+0.25:61U=-0.175U=+0.25[]",
       'U':   "2|2.1|2|1.4|12.5|14|16|60U:70U:61UU:53UU:62P(qc=6)[]",
