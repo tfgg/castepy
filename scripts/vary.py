@@ -18,29 +18,29 @@ import itertools
 import os, os.path
 
 def parse_args(args):
-  variables = {None: []}
+  extra = []
+  vars = []
 
   current_var = None
 
   for arg in args:
     if arg.startswith('--'):
-      var_name = arg[2:]
-      current_var = var_name
+      current_var = arg[2:]
     else:
       if current_var is not None:
-        variables[current_var] = arg
+        vars.append((current_var, arg))
         current_var = None
       else:
-        variables[current_var].append(arg)
+        extra.append(arg)
 
-  return variables
+  return (extra, vars) 
 
-vars = parse_args(sys.argv[1:])
+extra, vars = parse_args(sys.argv[1:])
 
-target_dir = vars[None][0]
-sources = vars[None][1:]
+target_dir = extra[0]
+sources = extra[1:]
 
-vars_values = {}
+vars_values = []
 
 def any(xs):
   for x in xs:
@@ -49,43 +49,46 @@ def any(xs):
   else:
     return False
 
-for var_name in vars:
-  if var_name is not None:
-    values = vars[var_name].split(",")
-  
-    try:
+for var_name, values in vars:
+  values = values.split(",")
 
-      if any(['.' in value for value in values]):
-        values = map(float, values)
-      else:
-        values = map(int, values)
+  try:
+    if any(['.' in value for value in values]):
+      values = map(float, values)
+    else:
+      values = map(int, values)
 
-    except ValueError:
-      pass
-
-    vars_values[var_name] = values
-
-  else:
+  except ValueError:
     pass
 
+  vars_values.append((var_name, values))
+
+vars_values_dict = dict(vars_values)
 num_calcs = 0
 
 # Take inner product of all our arguments and produce a dictionary of values
-for vars_value in list(itertools.product(*[values for _, values in vars_values.items()])):
-  template_context = dict(zip(vars_values.keys(), vars_value))
+for vars_value in list(itertools.product(*[values for var_name, values in vars_values])):
+  template_context = dict(zip([var_name for var_name, _ in vars_values], vars_value))
 
   # Generate name from varying arguments
   name = []
-  for var_name in vars_values:
-    if len(vars_values[var_name]) > 1:
-      name.append("{0}={1}".format(var_name, template_context[var_name]))
+  for var_name, _ in vars_values:
+    if len(vars_values_dict[var_name]) > 1:
+      value = template_context[var_name]
 
-  dir_name = ",".join(name)
-  dir_path = os.path.join(target_dir, dir_name)
+      if type(value) == str:
+        value = value.replace(' ', '_')
+
+      name.append("{0}={1}".format(var_name, value))
+
+  dir_path = os.path.join(target_dir, *name)
 
   # Make dir if it doesn't already exist
-  if not os.path.isdir(dir_path):
-    os.mkdir(dir_path)
+  for i in range(1,len(name)+1):
+    check_dir_path = os.path.join(target_dir, *name[:i])
+
+    if not os.path.isdir(check_dir_path):
+      os.mkdir(check_dir_path)
 
   # Generate our source files from template and write out
   for source in sources:
