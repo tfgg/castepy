@@ -15,7 +15,7 @@ echo Job using the following number of cores: $NSLOTS
 echo Job starting on: `date`
 
 set MPIRUN   = mpirun
-set MPIFLAGS = --mca btl self,openib,sm,tcp
+set MPIFLAGS = "--mca btl self,openib,sm,tcp"
 
 $MPIRUN $MPIFLAGS -np %(num_cores)d %(code)s %(seedname)s
 
