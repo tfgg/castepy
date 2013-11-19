@@ -1,0 +1,13 @@
+!fix_occupancy = true
+opt_strategy : speed
+task        = magres
+magres_task = jcoupling
+cut_off_energy = 80 ry 
+xc_functional: PBE
+popn_calculate: true
+spin_polarized: false
+max_scf_cycles: 60
+nextra_bands: 20
+fine_grid_scale: 4
+grid_scale: 2
+

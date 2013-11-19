@@ -1,6 +1,6 @@
 import unittest
-import castepy.cell as cell
-import castepy.bonds as bonds
+import castepy.input.cell as cell
+import castepy.output.bonds as bonds
 
 class TestBonds(unittest.TestCase):
   calc1_path = "test_data/ethanol/ethanol"
