@@ -2,6 +2,7 @@ import sys, os
 import shutil
 import random
 
+from castepy.templates.submission_scripts import get_submission_script
 import castepy.settings as settings
 from castepy import castepy, cell
 from castepy.calc import CastepCalc
@@ -42,9 +43,11 @@ def make(source_dir, source_name, target_dir, target_name=None, c=None, **kwargs
                 'queue': queue,
                 'CASTEPY_ROOT': settings.CASTEPY_ROOT,
                 'USER_EMAIL': settings.USER_EMAIL,
+                'code': 'castep.mpi',
                 }
 
-  sh_source = open(os.path.join(nmr_path, "nmr.sh")).read()
+  sh_source = get_submission_script()
+
   sh_target_file = open(sh_target, "w+")
 
   print >>sh_target_file, sh_source % sh_context

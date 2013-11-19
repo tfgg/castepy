@@ -86,7 +86,7 @@ def make(source_dir, source_name, target_dir, target_name=None, jc_s=None, jc_i=
                 'num_cores': num_cores,
                 'h_vmem': float(num_cores)/8 * 23,
                 'queue': queue,
-                'code': 'castep-jc'}
+                'code': 'castep-jc.mpi'}
 
   print sh_context
 

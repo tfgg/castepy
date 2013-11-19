@@ -12,6 +12,7 @@ tasks = {'jc': path('templates/jc/jc.py'),
          'relax-full': path('templates/relax/relax-full.py'),
          'copy': path('templates/copy/copy.py'),
          'nmr': path('templates/nmr/nmr.py'),
+         'energy': path('templates/energy/energy.py'),
          'spectral': path('templates/spectral/spectral.py'),
          'python': path('templates/python/python.py'),}
 
