@@ -1,8 +1,8 @@
 #!/bin/bash --login
 #PBS -N %(seedname)s
 #PBS -V
-#PBS -l mppwidth=%(num_cores)d
-#PBS -l mppnppn=%(num_cores)d
+#PBS -l mppwidth=%(num_round_cores)d
+#PBS -l mppnppn=32
 #PBS -l walltime=00:15:00
 #PBS -A e89-ox_m
 
@@ -23,7 +23,9 @@ export GFORTRAN_TMPDIR=$PBS_O_WORKDIR
 #   using threading.
 export OMP_NUM_THREADS=1
 
+let CORES_PER_NODE=32
+
 # Change the name of the input file to match your own job
-aprun -n %(num_cores)d -N %(num_cores)d %(code)s %(seedname)s
+aprun -n %(num_cores)d -N $CORES_PER_NODE %(code)s %(seedname)s
 
 

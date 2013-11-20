@@ -2,7 +2,7 @@
 
 import os, sys, getopt
 from castepy.input.cell import Cell
-from castepy.util import calc_from_path, path
+from castepy.utils import calc_from_path, path
 
 import castepy.settings as settings
 
