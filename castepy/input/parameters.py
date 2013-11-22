@@ -48,15 +48,34 @@ def attempt_numeric_units(s, units):
     except ValueError:
       return StrWithUnits(s, units)
 
-def makeparam(s):
-  s = s.strip().split()
+#def makeparam(s):
+#  s = s.strip().split()
+#
+#  if len(s) == 1:
+#    return attempt_numeric(s)
+#  elif len(s) == 2:
+#    return [attempt_numeric(s[0]), s[1]]
+#  else:
+#    raise Exception("Don't know how to handle multiple cols %s" % s)
 
-  if len(s) == 1:
-    return attempt_numeric(s)
-  elif len(s) == 2:
-    return [attempt_numeric(s[0]), s[1]]
-  else:
-    raise Exception("Don't know how to handle multiple cols %s" % s)
+def makeparam(ss):
+  ss = ss.strip().split()
+
+  def try_cast(s):
+    try:
+      return int(s)
+    except:
+      try:
+        return float(s)
+      except:
+        return str(s)
+
+  ss_conv = map(try_cast, ss)
+
+  #if len(ss_conv) == 1:
+  #  return ss_conv[0]
+  #else:
+  return ss_conv
 
 class Parameters:
   def __init__(self, params=None):
@@ -85,6 +104,7 @@ class Parameters:
         if len(nv) == 2:
           name = nv[0].strip()
           value = nv[1].strip()
+
           params[name] = makeparam(nv[1])
     
     return params
