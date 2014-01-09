@@ -200,14 +200,23 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
   else:
     code = "castep-jc"
 
-  num_round_cores = round_cores_up(num_cores, 8)
+  h_vmem = 0.0
+
+  if queue in ["shortpara.q,", "parallel.q"]:
+    num_round_cores = round_cores_up(num_cores, 8)
+    h_vmem = float(num_round_cores)/8 * 23
+  elif queue in ["newpara.q"]:
+    num_round_cores = round_cores_up(num_cores, 12)
+    h_vmem = float(num_round_cores)/12 * 63
+  else:
+    raise Exception("Unknown queue system")
 
   sh_context = {'seedname': pipes.quote(target_name),
                 'CASTEPY_ROOT': settings.CASTEPY_ROOT,
                 'USER_EMAIL': settings.USER_EMAIL,
                 'num_cores': num_cores,
                 'num_round_cores': num_round_cores,
-                'h_vmem': float(num_round_cores)/8 * 23,
+                'h_vmem': h_vmem,
                 'queue': queue,
                 'code': code}
 

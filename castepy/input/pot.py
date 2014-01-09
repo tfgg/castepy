@@ -6,6 +6,7 @@ import sys
 import re
 
 from castepy.input.cell import Cell
+from castepy.constants import periodic_table
 
 def add_potentials(pot_dir, dir_path, cell_file, rel=False):
   if cell_file.__class__ != Cell:
@@ -51,7 +52,10 @@ def add_potentials_usp(cell_file, rel=False, type='schro'):
   if rel:
     species_pot = []
     for s, n in c.ions.species():
-      species_pot.append("%s %s" % (s, make_lab(otfg[s], type)))
+      if periodic_table[s] >= 37:
+        species_pot.append("%s %s" % (s, make_lab(otfg[s], 'dirac')))
+      else:
+        species_pot.append("%s %s" % (s, make_lab(otfg[s], 'schro')))
   else:
     species_pot = []
     for s, n in c.ions.species():
