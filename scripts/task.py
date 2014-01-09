@@ -2,7 +2,7 @@
 
 import os, sys, getopt
 from castepy.input.cell import Cell
-from castepy.util import calc_from_path, path
+from castepy.utils import calc_from_path, path
 
 import castepy.settings as settings
 
@@ -15,6 +15,7 @@ tasks = {'jc': path('templates/jc/jc.py'),
          'relax-full': path('templates/relax/relax-full.py'),
          'copy': path('templates/copy/copy.py'),
          'nmr': path('templates/nmr/nmr.py'),
+         'energy': path('templates/energy/energy.py'),
          'psptest': path('templates/psptest/psptest.py'),
          'spectral': path('templates/spectral/spectral.py'),
          'python': path('templates/python/python.py'),}

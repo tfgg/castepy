@@ -198,7 +198,7 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
   if usp_pot:
     code = "castep-jcusp.mpi"
   else:
-    code = "castep-jc"
+    code = "castep-jcusp.mpi"
 
   h_vmem = 0.0
 
