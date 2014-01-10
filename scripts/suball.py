@@ -35,6 +35,6 @@ if __name__ == "__main__":
 
     print >>f_sh, "cd %s" % pipes.quote(dir)
     print >>f_sh, "qsub %s" % pipes.quote(file)
-    print >>f_sh, "cd %s" % pipes.quote(root_path)
+    #print >>f_sh, "cd %s" % pipes.quote(root_path)
 
   os.chmod(script_path, 0755)
