@@ -29,9 +29,10 @@ class TestCell(unittest.TestCase):
     
     self.assertEqual(len(c.ions.within(C1, 1.5)), 4)
 
-  def test_lattice_unimplemented(self):
-    with self.assertRaises(cell.Cell.LatticeNotImplemented):
-      c = cell.Cell(open(self.cell2_path).read())
+  def test_lattice_abc(self):
+    c = cell.Cell(open(self.cell2_path).read())
+
+    print c.lattice
 
   def test_lattice_wrong_shape(self):
     with self.assertRaises(cell.Cell.LatticeWrongShape):

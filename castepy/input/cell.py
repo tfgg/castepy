@@ -64,6 +64,56 @@ class Cell:
         self.parse_lattice()
         self.parse_ions()
 
+    def parse_lattice_cart(self, block):
+      lattice = []
+      units = "ang"
+
+      for line in block: 
+        lsplit = line.split()
+
+        if len(lsplit) == 3:
+          lattice.append((float(lsplit[0]),
+                          float(lsplit[1]),
+                          float(lsplit[2]),))
+        elif len(lsplit) == 1:
+          units = lsplit[0]
+
+      return (units, lattice)
+
+    def parse_lattice_abc(self, block):
+      lattice = []
+      units = None
+
+      pi = numpy.pi
+      sin = numpy.sin
+      cos = numpy.cos
+      sqrt = numpy.sqrt
+
+      a = b = c = alpha = beta = gamma = None
+
+      if len(block) == 3:
+        units = block[0]
+        a, b, c = map(float, block[1].split())
+        alpha, beta, gamma = map(float, block[2].split())
+      elif len(block) == 2:
+        units = "ang"
+        a, b, c = map(float, block[0].split())
+        alpha, beta, gamma = map(float, block[1].split())
+
+      alpha = alpha * pi / 180.0
+      beta = beta * pi / 180.0
+      gamma = gamma * pi / 180.0
+
+      lattice.append([a, 0.0, 0.0])
+      lattice.append([b*cos(gamma), b*sin(gamma), 0.0])
+      lattice.append([c*cos(beta),
+                      c*(cos(alpha) - cos(beta)*cos(gamma))/sin(gamma),
+                      0.0])
+
+      lattice[2][2] = sqrt(c**2 - lattice[2][0]**2 - lattice[2][1]**2)
+
+      return (units, lattice)
+
     def parse_lattice(self):
         self.lattice_type = None
         for block_name in self.blocks:
@@ -73,23 +123,18 @@ class Cell:
         if self.lattice_type is None:
           return
 
-        self.lattice_units = "ang"
-        
-        lattice = []
-        if self.lattice_type == 'LATTICE_CART':
-          for line in self.blocks[self.lattice_type]:
-            lsplit = line.split()
+        lattice = None
+        units = None
 
-            if len(lsplit) == 3:
-              lattice.append((float(lsplit[0]),
-                              float(lsplit[1]),
-                              float(lsplit[2]),))
-            elif len(lsplit) == 1:
-              self.lattice_units = lsplit[0]
+        if self.lattice_type == "LATTICE_CART":
+          units, lattice = self.parse_lattice_cart(self.blocks["LATTICE_CART"])
+        elif self.lattice_type == "LATTICE_ABC":
+          units, lattice = self.parse_lattice_abc(self.blocks["LATTICE_ABC"])
         else:
           raise self.LatticeNotImplemented("%s not implemented in parser" % self.lattice_type)
 
         self.lattice = numpy.array(lattice)
+        self.lattice_units = units
 
         if self.lattice.shape != (3,3):
           raise self.LatticeWrongShape("Lattice vectors given not 3x3")
@@ -168,17 +213,6 @@ class Cell:
     def regen_lattice_block(self):
         self.blocks[self.lattice_type] = [self.lattice_units] + ["{:f} {:f} {:f}".format(a,b,c) for a,b,c in self.ions.lattice]
 
-    def jcoupling_shift_origin(self):
-        """ Hack to move the perturbing NMR nucleus onto the origin """
-        if 'jcoupling_site' not in self.otherdict:
-          j_site = raw_input("Specify the j-coupling site: ").split()
-          self.other.append("jcoupling_site: " + " ".join(j_site))
-        else: 
-          j_site = self.otherdict['jcoupling_site'].split()
-        
-        j_site_ion = self.ions.get_species(j_site[0], int(j_site[1]))
-        self.ions.translate_origin(j_site_ion.p) 
-
     def make_unique_ions(self):
         """ Generate a unique set of the ions, fix duplicates """
         ions = dict()
@@ -202,45 +236,6 @@ class Cell:
 
         self.regen_ion_block()
    
-    # Geometric routines
-    def closest(self, q):
-      """
-        Find the ion closest to q, accounting for cyclic coordinates.
-      """
-
-      min_d2 = None
-      min_ion = None
-      min_p = None
-     
-      for ion in self.ions:
-        d2,p = least_mirror(ion.p, q, self.basis, self.ions.lattice)
-
-        if min_d2 is None or d2 < min_d2:
-          min_d2 = d2
-          min_ion = ion
-          min_p = p
-
-      return (min_ion, math.sqrt(min_d2), min_p)
-
-    def least_mirror(self, p, q):
-      return least_mirror(p, q, self.ions.basis, self.ions.lattice)
-
-    def neighbours(self, q, max_dist=None, above_index=0, species=None):
-      """
-        Return neighbours of q in distance order, for easy slicing
-      """
-    
-      ions = []
-      for i in range(above_index, len(self.ions)):
-        ion = self.ions[i]
-
-        d2, p = self.least_mirror(ion.p, q)
-
-        if (max_dist is None or d2 < max_dist**2) and (species is None or ion.s in species):
-          ions.append((ion, math.sqrt(d2), p))
-    
-      return sorted(ions, key=lambda (ion,d,p): d)
-
     def __str__(self):
         self.regen_ion_block()
         self.regen_lattice_block()
