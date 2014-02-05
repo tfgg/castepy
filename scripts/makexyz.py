@@ -1,3 +1,4 @@
+#!python
 import sys
 from castepy.cell import Cell
 
