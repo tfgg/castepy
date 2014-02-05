@@ -3,4 +3,5 @@
 *.swn
 *.swo
 build
+test_data/castep_tests/*.cell
 
