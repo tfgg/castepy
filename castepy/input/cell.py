@@ -1,7 +1,11 @@
 import re
 import numpy
 import math
-from castepy.ion import Ion, Ions, least_mirror
+
+from collections import Counter
+
+from castepy.atoms import AtomsView
+from castepy.atom import Atom
 
 class Cell:
     class LatticeNotImplemented(Exception): pass
@@ -12,7 +16,7 @@ class Cell:
         self.other = []
         self.otherdict = {}
 
-        self.ions = Ions()
+        self.ions = None 
 
         if cell_file is not None:
             self.parse_cell(cell_file)
@@ -108,45 +112,61 @@ class Cell:
         convert = False # Dont convert frac to cart
         if self.ions_type == 'POSITIONS_FRAC':
           convert = True
-	
+
+        atoms = []
+
+        index_counter = Counter()
+
         self.ions_units = None
         for line in self.blocks[self.ions_type]: # Include positions frac
           lsplit = line.split()
 
           if len(lsplit) == 4:
             s, x, y, z = lsplit
-            p = (float(x), float(y), float(z))
+            position = (float(x), float(y), float(z))
 
-            s = s.split(":")[0]
+            sl = s.split(":")
+
+            species = sl[0]
+
+            # Atoms are 1-indexed to match castep.
+            index_counter[species] += 1
+            index = index_counter[species]
+
+            if len(sl) > 1:
+              label = sl[1]
+            else:
+              label = species
 
             if convert:
-              p = numpy.dot(self.basis.T, p)
+              position = numpy.dot(self.basis.T, position)
 
-            self.ions.add(Ion(s, p))
+            atoms.append(Atom(species, index, position, label))
+
           elif len(lsplit) == 1:
             self.ions_units = lsplit[0]
 
         if self.ions_units is None:
           self.ions_units = 'ang'
 
+        # If we've converted, change the basis
         if convert:
           self.ions_type = 'POSITIONS_ABS'
           self.basis = numpy.array([[1.0, 0.0, 0.0],
                                     [0.0, 1.0, 0.0],
                                     [0.0, 0.0, 1.0]])
 
-        self.ions.lattice = self.lattice
-        self.ions.basis = self.basis
+        self.ions = AtomsView(atoms, self.lattice)
 
     def regen_ion_block(self):
         for type in ['POSITIONS_ABS', 'POSITIONS_FRAC']: # Clear out any other ion blocks
           if type in self.blocks:
             del self.blocks[type]
 
-        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (ion.s, ion.p[0], ion.p[1], ion.p[2]) for ion in self.ions.ions]
+        self.blocks[self.ions_type] = [self.ions_units] + ["{} {:f} {:f} {:f}".format(atom.species, atom.position[0], atom.position[1], atom.position[2]) for atom in self.ions]
 
     def regen_lattice_block(self):
-        self.blocks[self.lattice_type] = [self.lattice_units] + ["%f %f %f" % (a,b,c) for a,b,c in self.ions.lattice]
+        self.blocks[self.lattice_type] = [self.lattice_units] + ["{:f} {:f} {:f}".format(a,b,c) for a,b,c in self.ions.lattice]
 
     def jcoupling_shift_origin(self):
         """ Hack to move the perturbing NMR nucleus onto the origin """

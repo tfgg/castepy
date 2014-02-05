@@ -26,13 +26,13 @@ class TestBonds(unittest.TestCase):
 
     self.assertEqual(len(c.ions.bonds), 8)
 
-    for O_ion in c.ions.get_species('O'):
+    for O_ion in c.ions.species('O'):
       self.assertEqual(len(O_ion.bonds), 2)
     
-    for C_ion in c.ions.get_species('C'):
+    for C_ion in c.ions.species('C'):
       self.assertEqual(len(C_ion.bonds), 4)
     
-    for H_ion in c.ions.get_species('H'):
+    for H_ion in c.ions.species('H'):
       self.assertEqual(len(H_ion.bonds), 1)
 
 if __name__ == "__main__":

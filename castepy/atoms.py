@@ -54,7 +54,7 @@ class AtomsView(object):
   """
     A container for a collection of atoms with an optional lattice.
   """
-  ViewType = AtomsView
+  ViewType = None
 
   def __init__(self, atoms=None, lattice=None):
     if atoms is not None:
@@ -226,14 +226,14 @@ class AtomsView(object):
     except AttributeError:
       try:
         s, i = self.re_species_index.findall(attr_name)[0]
-        return self.get_species(s, int(i))
+        return self.species_index[s][int(i)-1]
       except:
         return getattr(ListPropertyView(self.atoms), attr_name)
 
   def __getitem__(self, idx):
     try:
       s, i = idx
-      return self.species(s)[i]
+      return self.species_index[s][i]
     except:
       return self.atoms[idx]
 
@@ -261,4 +261,10 @@ class AtomsView(object):
       new_atoms = set(self.atoms + [b])
       
       return self.ViewType(list(new_atoms), self.lattice)
+
+AtomsView.ViewType = AtomsView
+
+class Atoms(AtomsView):
+  def __init__(self, *args, **kwargs):
+    super(Atoms, self).__init__(*args, **kwargs)
 

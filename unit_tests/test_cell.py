@@ -21,9 +21,13 @@ class TestCell(unittest.TestCase):
     self.assertEqual(c.lattice_units, 'ang')
 
     self.assertEqual(len(c.ions), 9)
-    self.assertEqual(len(c.ions.get_species('H')), 6)
-    self.assertEqual(len(c.ions.get_species('C')), 2)
-    self.assertEqual(len(c.ions.get_species('O')), 1)
+    self.assertEqual(len(c.ions.species('H')), 6)
+    self.assertEqual(len(c.ions.species('C')), 2)
+    self.assertEqual(len(c.ions.species('O')), 1)
+
+    C1 = c.ions.C1
+    
+    self.assertEqual(len(c.ions.within(C1, 1.5)), 4)
 
   def test_lattice_unimplemented(self):
     with self.assertRaises(cell.Cell.LatticeNotImplemented):
@@ -32,6 +36,15 @@ class TestCell(unittest.TestCase):
   def test_lattice_wrong_shape(self):
     with self.assertRaises(cell.Cell.LatticeWrongShape):
       c = cell.Cell(open(self.cell3_path).read())
+
+  def test_to_string(self):
+    """
+      Does generating a .cell file from the object work and is it consistent?
+    """
+    c1 = cell.Cell(open(self.cell1_path).read())
+    c2 = cell.Cell(str(c1))
+
+    self.assertEqual(str(c1), str(c2))
 
 if __name__ == "__main__":
   unittest.main()

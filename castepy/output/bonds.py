@@ -1,7 +1,5 @@
 import re
 import sys
-import castepy.ion
-from castepy.ion import least_mirror
 import numpy
 from numpy import dot, array
 import math
@@ -49,8 +47,8 @@ def add_bonds(ions, castep_file, pop_tol=0.2, dist_tol=None):
   if bonds == []:
     raise Exception("No bonds found")
 
-  for ion in ions.ions:
-    ion.bonds = []
+  for atom in ions:
+    atom.bonds = []
 
   # Store all bonds, unduplicated
   ions.bonds = []
@@ -63,14 +61,14 @@ def add_bonds(ions, castep_file, pop_tol=0.2, dist_tol=None):
       continue
     ions.bonds.append(bond)
     
-    ion1 = ions.get_species(s1, i1)
-    ion2 = ions.get_species(s2, i2)
+    ion1 = ions.species_index[s1][i1-1]
+    ion2 = ions.species_index[s2][i2-1]
 
-    d2, p2 = least_mirror(ion2.p, ion1.p, ions.basis, ions.lattice) # Mirror location of ion2 from ion1
-    d2, p1 = least_mirror(ion1.p, ion2.p, ions.basis, ions.lattice) # Mirror location of ion1 from ion2
+    _, p2 = ions.least_mirror(ion2.position, ion1.position) # Mirror location of ion2 from ion1
+    _, p1 = ions.least_mirror(ion1.position, ion2.position) # Mirror location of ion1 from ion2
     
-    ion1.bonds.append((ion2, p2, pop, r))
-    ion2.bonds.append((ion1, p1, pop, r))
+    ion1.bonds.append((ion2, ion1.position, pop, r))
+    ion2.bonds.append((ion1, ion2.position, pop, r))
 
 def bond_neighbours(ion, n=1, visited=None):
   """

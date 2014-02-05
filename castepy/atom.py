@@ -7,14 +7,14 @@ from decorators import lazyproperty
 
 class Atom(object):
   def __init__(self, species, index, position, label=None):
-    self.species = species
-    self.index = index
-    self.position = numpy.array(position)
+    self._species = species 
+    self._index = index
+    self._position = numpy.array(position)
 
     if label is not None:
-      self.label = label
+      self._label = label
     else:
-      self.label = species
+      self._label = self._species
 
   def __str__(self):
     if self.species != self.label:
@@ -39,36 +39,36 @@ class Atom(object):
     """
       This atom's label.
     """
-    return self.label
+    return self._label
   
   @label.setter
   def label(self, value):
-    self.label = value
+    self._label = value
 
   @property
   def species(self):
     """
       This atom's species.
     """
-    return self.species
+    return self._species
  
   @species.setter
   def species(self, value):
-    self.species = value
+    self._species = value
 
   @property
   def index(self):
     """
       This atom's label index.
     """
-    return self.index
+    return self._index
   
   @property
   def position(self):
     """
       This atom's position in cartesian coordinates. Units are Angstroms.
     """
-    return self.position
+    return self._position
 
 class AtomImage(object):
   """
