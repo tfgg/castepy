@@ -1,4 +1,5 @@
 import unittest
+import numpy
 import castepy.input.cell as cell
 
 class TestCell(unittest.TestCase):
@@ -19,6 +20,10 @@ class TestCell(unittest.TestCase):
     self.assertEqual(c.ions_units, 'ang')
     self.assertEqual(c.lattice_type, 'LATTICE_CART')
     self.assertEqual(c.lattice_units, 'ang')
+    
+    lattice = [[6.0,0.0,0.0],[0.0,6.0,0.0],[0.0,0.0,6.0]]
+
+    self.assertTrue(numpy.allclose(c.lattice, lattice, rtol=1e-05, atol=1e-08))
 
     self.assertEqual(len(c.ions), 9)
     self.assertEqual(len(c.ions.species('H')), 6)
@@ -32,7 +37,9 @@ class TestCell(unittest.TestCase):
   def test_lattice_abc(self):
     c = cell.Cell(open(self.cell2_path).read())
 
-    print c.lattice
+    lattice = [[6.0,0.0,0.0],[0.0,6.0,0.0],[0.0,0.0,6.0]]
+
+    self.assertTrue(numpy.allclose(c.lattice, lattice, rtol=1e-05, atol=1e-08))
 
   def test_lattice_wrong_shape(self):
     with self.assertRaises(cell.Cell.LatticeWrongShape):
