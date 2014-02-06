@@ -1,8 +1,0 @@
-task: magres
-opt_strategy: speed
-magres_task: nmr
-popn_calculate: true
-spin_polarized: false
-xc_functional: PBE
-cut_off_energy: 50 ry
-!fix_occupancy = true
