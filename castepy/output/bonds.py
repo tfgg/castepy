@@ -89,15 +89,6 @@ def bond_neighbours(ion, n=1, visited=None):
  
   return rtn
 
-def find_common(ion1, ion2):
-  """
-    Find the commonly bonded ion between ion1 and ion2, for bond angle calcs
-  """
-  bonded1 = set([ion3 for ion3, p, _, _ in ion1.bonds])
-  bonded2 = set([ion3 for ion3, p, _, _ in ion2.bonds])
-
-  return set.intersection(bonded1,bonded2)
-
 def bond_angle(ion1, ion2, ions):
   common = find_common(ion1, ion2).pop()
   p1 = ion1.p
@@ -136,7 +127,7 @@ class BondsResult(object):
         
       self.index[idx2][idx1] = (population, r)
 
-  def find_common(self, idx1, idx2):
+  def common(self, idx1, idx2):
     bonded1 = set(self.index[idx1].keys())
     bonded2 = set(self.index[idx2].keys())
 

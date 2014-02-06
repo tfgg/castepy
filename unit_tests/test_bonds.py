@@ -5,7 +5,7 @@ from castepy.output.bonds import BondsResult, parse_bonds
 class TestBonds(unittest.TestCase):
   calc1_path = "test_data/ethanol/ethanol"
 
-  def test_ethanol1(self):
+  def test_ethanol_basic(self):
     """
       Check basic bond parser is working for example of ethanol.
     """
@@ -15,9 +15,9 @@ class TestBonds(unittest.TestCase):
     # Make sure we parse all the bonds
     self.assertEqual(len(parsed_bonds), 32)
 
-  def test_ethanol2(self):
+  def test_ethanol_bond_result(self):
     """
-      Read in ethanol cell and load bonds onto ions and check they're correct.
+      Check BondsResult is doing its job.
     """
 
     #c = cell.Cell(open("%s.cell" % self.calc1_path).read())
@@ -35,7 +35,19 @@ class TestBonds(unittest.TestCase):
     self.assertEqual(len(bonds.index[('H',4)]), 1)
     self.assertEqual(len(bonds.index[('H',5)]), 1)
     self.assertEqual(len(bonds.index[('H',6)]), 1)
-    
+   
+  def test_ethanol_common(self):
+    """
+      Check function to calculate common neighbours
+    """
+
+    castep_file = open("%s.castep" % self.calc1_path).read()
+
+    bonds = BondsResult.load(castep_file).next()
+
+    self.assertTrue(('C',2) in bonds.common(('C',1),('O',1)))
+    self.assertTrue(('O',1) in bonds.common(('H',6),('C',2)))
+
 if __name__ == "__main__":
   unittest.main()
 
