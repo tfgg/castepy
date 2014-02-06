@@ -104,16 +104,28 @@ def bond_angle(ion1, ion2, ions):
 
 
 class BondsResult(object):
+  """
+    BondsResult parses and contains the output of a .castep population analysis.
+  """
+
   def __init__(self, bonds, tol=0.25):
     self.bonds = [bond for bond in bonds if bond[2] >= tol]
     self._build_index()
 
   @classmethod
   def load(klass, castep_file, tol=0.25):
+    """
+      Class method to load and emit every found bonds block in a .castep file
+    """
+
     for bonds in parse_bonds(castep_file):
       yield BondsResult(bonds, tol)
 
   def _build_index(self):
+    """
+      Build an index of which atoms are connected to which
+    """
+
     self.index = {}
 
     for idx1, idx2, population, r in self.bonds:
@@ -128,6 +140,10 @@ class BondsResult(object):
       self.index[idx2][idx1] = (population, r)
 
   def common(self, idx1, idx2):
+    """
+      Return a set of atoms bonded to both atom1 and atom2
+    """
+
     bonded1 = set(self.index[idx1].keys())
     bonded2 = set(self.index[idx2].keys())
 
