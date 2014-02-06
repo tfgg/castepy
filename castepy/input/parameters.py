@@ -80,14 +80,15 @@ def makeparam(ss):
 class Parameters:
   def __init__(self, params=None):
     self.__dict__['params'] = {}
+    self.__dict__['comments'] = []
 
     if params is not None:
       if type(params) is dict:
         self.params = params
       elif type(params) is str:
-        self.params = self.parse_params(params)
+        self.params, self.comments = self.parse_params(params)
       elif type(params) is file:
-        self.params = self.parse_params(params.read())
+        self.params, self.comments = self.parse_params(params.read())
 
   def parse_params(self, params):
     import re
@@ -96,18 +97,24 @@ class Parameters:
 
     plines = params.split("\n")
 
+    comments = []
     params = {}
     for pline in plines:
-        pline = comments_re.sub("", pline)
-        nv = split_re.split(pline)
-        
-        if len(nv) == 2:
-          name = nv[0].strip()
-          value = nv[1].strip()
+        pline = pline.strip()
 
-          params[name] = makeparam(nv[1])
+        if comments_re.match(pline):
+           comments.append(pline)
+        else:
+          pline = comments_re.sub("", pline)
+          nv = split_re.split(pline)
+          
+          if len(nv) == 2:
+            name = nv[0].strip()
+            value = nv[1].strip()
+
+            params[name] = makeparam(nv[1])
     
-    return params
+    return params, comments
 
   def __setitem__(self, n, v):
     self.params[n] = v
@@ -131,4 +138,7 @@ class Parameters:
       raise AttributeError(key)
 
   def __str__(self):
-    return "\n".join(["%s: %s" % (n , " ".join(map(str,v))) for n, v in self.params.items()])
+    lines = []
+    lines += ["%s: %s" % (n , " ".join(map(str,v))) for n, v in self.params.items()]
+    lines += self.comments
+    return "\n".join(lines)

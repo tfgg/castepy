@@ -3,5 +3,6 @@
 *.swn
 *.swo
 build
-test_data/castep_tests/*.cell
+test_data/castep_cells/*.cell
+test_data/castep_params/*.cell
 

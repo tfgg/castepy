@@ -13,7 +13,6 @@ class Cell:
 
     def __init__(self, cell_file=None, **kwargs):
         self.blocks = {}
-        self.other = []
         self.otherdict = {}
 
         self.ions = None 
@@ -54,12 +53,14 @@ class Cell:
         for o in other:
             o_s = o.strip()
             if len(o_s) > 0:
-                self.other.append(o_s)
-                
                 o_split = re.split("[\s:]+", o_s, maxsplit=1)
 
                 if len(o_split) == 2:
-                    self.otherdict[o_split[0]] = o_split[1]
+                  self.otherdict[o_split[0]] = o_split[1]
+                elif len(o_split) == 1:
+                  self.otherdict[o_split[0]] = None
+                else:
+                  raise Exception("More than two columns for cell-other split")
 
         self.parse_lattice()
         self.parse_ions()
@@ -239,14 +240,19 @@ class Cell:
     def __str__(self):
         self.regen_ion_block()
         self.regen_lattice_block()
-        s  = ""
+        
+        out = []
         for name, lines in self.blocks.items():
-            s += "%%block %s\n" % name
-            s += "\n".join(lines)
-            s += "\n%%endblock %s\n\n" % name
+            out.append("%block {}".format(name))
+            out += lines
+            out.append("%endblock {}".format(name))
+            out.append("")
 
-        for line in self.other:
-            s += "%s\n" % line
+        for key, value in self.otherdict.items():
+            if value is not None:
+              out.append("{}: {}".format(key, value))
+            else:
+              out.append(key)
 
-        return s
+        return "\n".join(out)
 
