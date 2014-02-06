@@ -1,6 +1,6 @@
 import unittest
 import castepy.input.cell as cell
-import castepy.output.bonds as bonds
+from castepy.output.bonds import BondsResult, parse_bonds
 
 class TestBonds(unittest.TestCase):
   calc1_path = "test_data/ethanol/ethanol"
@@ -10,7 +10,7 @@ class TestBonds(unittest.TestCase):
       Check basic bond parser is working for example of ethanol.
     """
 
-    parsed_bonds = bonds.parse_bonds(open(self.calc1_path + ".castep").read())
+    parsed_bonds = parse_bonds(open(self.calc1_path + ".castep").read()).next()
 
     # Make sure we parse all the bonds
     self.assertEqual(len(parsed_bonds), 32)
@@ -20,21 +20,22 @@ class TestBonds(unittest.TestCase):
       Read in ethanol cell and load bonds onto ions and check they're correct.
     """
 
-    c = cell.Cell(open("%s.cell" % self.calc1_path).read())
+    #c = cell.Cell(open("%s.cell" % self.calc1_path).read())
     castep_file = open("%s.castep" % self.calc1_path).read()
-    bonds.add_bonds(c.ions, castep_file)
 
-    self.assertEqual(len(c.ions.bonds), 8)
+    bonds = BondsResult.load(castep_file).next()
 
-    for O_ion in c.ions.species('O'):
-      self.assertEqual(len(O_ion.bonds), 2)
+    self.assertEqual(len(bonds.bonds), 8)
+    self.assertEqual(len(bonds.index[('C',1)]), 4)
+    self.assertEqual(len(bonds.index[('C',2)]), 4)
+    self.assertEqual(len(bonds.index[('O',1)]), 2)
+    self.assertEqual(len(bonds.index[('H',1)]), 1)
+    self.assertEqual(len(bonds.index[('H',2)]), 1)
+    self.assertEqual(len(bonds.index[('H',3)]), 1)
+    self.assertEqual(len(bonds.index[('H',4)]), 1)
+    self.assertEqual(len(bonds.index[('H',5)]), 1)
+    self.assertEqual(len(bonds.index[('H',6)]), 1)
     
-    for C_ion in c.ions.species('C'):
-      self.assertEqual(len(C_ion.bonds), 4)
-    
-    for H_ion in c.ions.species('H'):
-      self.assertEqual(len(H_ion.bonds), 1)
-
 if __name__ == "__main__":
   unittest.main()
 

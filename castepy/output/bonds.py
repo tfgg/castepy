@@ -7,6 +7,14 @@ import math
 regex_block = re.compile("\s+Bond\s+Population\s+Length \(A\).*?\n[=]+\n(.*?)\n[=]+", re.M | re.S)
 regex_line = re.compile("\s+([A-Za-z]+)\s+([0-9]+)\s+--\s+([A-Za-z]+)\s+([0-9]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)")
 
+def parse_bonds_block(block):
+  bonds = []
+
+  for s1, i1, s2, i2, population, r in regex_line.findall(block):
+    bonds.append(((s1, int(i1)), (s2, int(i2)), float(population), float(r)))
+
+  return bonds
+
 def parse_bonds(castep_file):
   """
     Parse bonding information from .castep file
@@ -14,17 +22,9 @@ def parse_bonds(castep_file):
 
   bond_blocks = regex_block.findall(castep_file)
 
-  if len(bond_blocks) == 0:
-    return []
-  
-  # Take the last block
-  block = bond_blocks[-1]
-
-  bonds = []
-  for s1, i1, s2, i2, population, r in regex_line.findall(block):
-    bonds.append(((s1, int(i1)), (s2, int(i2)), float(population), float(r)))
-
-  return bonds
+  for block in bond_blocks:
+    bonds = parse_bonds_block(block)
+    yield bonds
 
 def rgb(r,g,b):
   return 2**16 * r + 2**8 * g + b
@@ -111,41 +111,40 @@ def bond_angle(ion1, ion2, ions):
 
   return math.acos(dot(bond1, bond2)/math.sqrt(dot(bond1,bond1)*dot(bond2,bond2))) 
 
-#if __name__ == "__main__":
-#  """
-#    Given a .cell file and a .castep file, dump the most likely bonds to a file for plotting
-#  """
-#  
-#  dir, file = os.path.split(sys.argv[1])
-#  name, _ = os.path.spltext(file)
-#
-#  calc = CastepCalc(dir, name)
-#  calc.load(include=["cell"])
-#  c = calc.cell
-#   
-#  if 'jcoupling_site' in c.otherdict:
-#    s,i  = c.otherdict['jcoupling_site'].split()
-#    i = int(i)
-#    jc_ion = c.ions.get_species(s, i)
 
-#    print >>sys.stderr, jc_ion
-#    c.ions.translate_origin(jc_ion.p)
-#    c.ions.wrap_inside(-0.5, 0.5)
-#    print >>sys.stderr, jc_ion
+class BondsResult(object):
+  def __init__(self, bonds, tol=0.25):
+    self.bonds = [bond for bond in bonds if bond[2] >= tol]
+    self._build_index()
 
-#  bonds = parse_bonds(open(sys.argv[2]).read())
+  @classmethod
+  def load(klass, castep_file, tol=0.25):
+    for bonds in parse_bonds(castep_file):
+      yield BondsResult(bonds, tol)
 
-#  max_pop = max([pop for _, _, pop, _ in bonds])
-#  min_pop = 0.5
+  def _build_index(self):
+    self.index = {}
 
-#  for (s1, i1), (s2, i2), pop, r in bonds:
-#    ion1 = c.ions.get_species(s1, i1)
-#    ion2 = c.ions.get_species(s2, i2)
+    for idx1, idx2, population, r in self.bonds:
+      if idx1 not in self.index:
+        self.index[idx1] = {}
+        
+      self.index[idx1][idx2] = (population, r)
+      
+      if idx2 not in self.index:
+        self.index[idx2] = {}
+        
+      self.index[idx2][idx1] = (population, r)
 
-#    if ion1.p[2] < -1.0/6 or ion1.p[2] > 1.0/6:
-#      #continue
-#      pass
+  def find_common(self, idx1, idx2):
+    bonded1 = set(self.index[idx1].keys())
+    bonded2 = set(self.index[idx2].keys())
 
-#    d2, p = ion.least_mirror(ion2.p, ion1.p)
-#    if pop > 0.2:
-#      print " ".join(map(str, ion1.p)), " ".join(map(str, p)), colour(clamp((pop-min_pop)/(max_pop-min_pop)))
+    return bonded1 & bonded2
+
+  def __str__(self):
+    out = []
+    for idx1, idx2, population, r in self.bonds:
+      out.append("{}{} -{:.2f}A-> {}{} ({:.2f})".format(idx1[0],idx1[1],r,idx2[0],idx2[1],population))
+    return "\n".join(out)
+
