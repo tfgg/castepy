@@ -1,81 +1,29 @@
 import re
+import os.path
 
-class IntWithUnits(int):
-  def __new__(klass, value, units):
-    obj = int.__new__(klass, value)
-    obj.units = units
-    return obj
-
-  def __str__(self):
-    return "%d %s" % (self, self.units)
-
-class FloatWithUnits(float):
-  def __new__(klass, value, units):
-    obj = float.__new__(klass, value)
-    obj.units = units 
-    return obj
-  
-  def __str__(self):
-    return "%f %s" % (self, self.units)
-
-class StrWithUnits(str):
-  def __new__(klass, value, units):
-    obj = str.__new__(klass, value)
-    obj.units = units
-    return obj
-  
-  def __str__(self):
-    return "%s %s" % (self, self.units)
-
-def attempt_numeric(s):
-  try:
-    return int(s)
-  except:
-    try:
-      return float(s)
-    except:
-      return s
-
-def attempt_numeric_units(s, units):
-  print s, units
-  print type(s), type(units)
-
-  try:
-    return IntWithUnits(int(s), units)
-  except ValueError:
-    try:
-      return FloatWithUnits(float(s), units)
-    except ValueError:
-      return StrWithUnits(s, units)
-
-#def makeparam(s):
-#  s = s.strip().split()
-#
-#  if len(s) == 1:
-#    return attempt_numeric(s)
-#  elif len(s) == 2:
-#    return [attempt_numeric(s[0]), s[1]]
-#  else:
-#    raise Exception("Don't know how to handle multiple cols %s" % s)
+from valid_params import valid_params
 
 def makeparam(ss):
-  ss = ss.strip().split()
-
-  def try_cast(s):
-    try:
-      return int(s)
-    except:
+  try:
+    ss = ss.strip().split()
+  except AttributeError:
+    return [ss]
+  else:
+    def try_cast(s):
       try:
-        return float(s)
+        return int(s)
       except:
-        return str(s)
+        try:
+          return float(s)
+        except:
+          return str(s)
 
-  ss_conv = map(try_cast, ss)
+    ss_conv = map(try_cast, ss)
 
-  #if len(ss_conv) == 1:
-  #  return ss_conv[0]
-  #else:
-  return ss_conv
+    return ss_conv
+
+class UnrecognisedParameter(Exception):
+  pass
 
 class Parameters:
   def __init__(self, params=None):
@@ -86,7 +34,10 @@ class Parameters:
       if type(params) is dict:
         self.params = params
       elif type(params) is str:
-        self.params, self.comments = self.parse_params(params)
+        if os.path.isfile(params):
+          self.params, self.comments = self.parse_params(open(params).read())
+        else:
+          self.params, self.comments = self.parse_params(params)
       elif type(params) is file:
         self.params, self.comments = self.parse_params(params.read())
 
@@ -123,7 +74,13 @@ class Parameters:
     if n in self.__dict__:
       self.__dict__[n] = v 
     else:
-      self.params[n] = makeparam(v)
+      if n not in valid_params:
+        raise UnrecognisedParameter(n)
+      else:
+        if n in self.params and type(v) in [int, float]:
+          self.params[n][0] = v
+        else:
+          self.params[n] = makeparam(v)
     
   def __getitem__(self, n):
     if n in self.params:

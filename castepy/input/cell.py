@@ -1,3 +1,5 @@
+import os.path
+
 import re
 import numpy
 import math
@@ -18,7 +20,13 @@ class Cell:
         self.ions = None 
 
         if cell_file is not None:
-            self.parse_cell(cell_file)
+          if type(cell_file) is str:
+            if os.path.isfile(cell_file):
+              self.parse_cell(open(cell_file).read())
+            else:
+              self.parse_cell(cell_file)
+          elif type(cell_file) is file:
+            self.parse_cell(cell_file.read())
 
         if 'lattice' in kwargs:
           self.lattice_units = "ang"
