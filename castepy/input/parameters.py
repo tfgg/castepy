@@ -74,7 +74,7 @@ class Parameters:
     if n in self.__dict__:
       self.__dict__[n] = v 
     else:
-      if n not in valid_params:
+      if n.lower() not in valid_params:
         raise UnrecognisedParameter(n)
       else:
         if n in self.params and type(v) in [int, float]:
