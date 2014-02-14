@@ -77,34 +77,91 @@ def link_files(required_files, dir_path):
         os.symlink(f, target)
 
 class PspOtfg(object):
-  def __init__(self, otfg_str):
+  def __init__(self, species, otfg_str):
+    self.species = species
     self.l_local = None
     self.rc_local = None
     self.rc_other = None
     self.rc_aug = None
     self.projectors = []
-    self.flags = []
-    self.flags_dict = {}
+    self.flags = {}
 
     self.parse(otfg_str)
 
   def parse(self, otfg_str):
     pipesplit = otfg_str.split('|')
 
-    self.l_local = int(pipesplit[0])
-    self.rc_local = float(pipesplit[1])
-    self.rc_other = float(pipesplit[2])
-    self.rc_aug = float(pipesplit[3])
+    if len(pipesplit) == 8:
+      self.l_local = int(pipesplit[0])
+      self.rc_local = float(pipesplit[1])
+      self.rc_other = float(pipesplit[2])
+      self.rc_aug = float(pipesplit[3])
+    elif len(pipesplit) == 6:
+      self.l_local = int(pipesplit[0])
+      self.rc_local = float(pipesplit[1])
+      self.rc_other = None
+      self.rc_aug = None
+    else:
+      raise Exception("Unknown pipe section")
 
-    # projstr = pipesplit[-1][:pipesplit.index('(')].split(':')
+    self.energy_test = map(float, pipesplit[-4:-1])
+
+    self.projectors = re.findall("(.*?)[\(\[{]", pipesplit[-1])[0].split(":")
 
     if '(' in otfg_str:
-      self.flags = otfg_str[otfg_str.index('(')+1:otfg_str.index(')')].split(',')
+      flags = otfg_str[otfg_str.index('(')+1:otfg_str.index(')')].split(',')
 
-      for flag in self.flags:
+      for flag in flags:
         if '=' in flag:
           key, val = flag.split('=')
-          self.flags_dict[key] = val
+          self.flags[key] = val
+        else:
+          self.flags[key] = None
+
+    if '{' in otfg_str:
+      self.config_gen = otfg_str[otfg_str.index('{')+1:otfg_str.index('}')].split(',')
+    else:
+      self.config_gen = None
+    
+    if '[' in otfg_str:
+      self.config_test = otfg_str[otfg_str.index('[')+1:otfg_str.index(']')].split(',')
+    else:
+      self.config_test = None
+
+  def __str__(self):
+    out = []
+
+    out.append("{}|".format(self.l_local))
+    out.append("{}|".format(self.rc_local))
+
+    if self.rc_other:
+      out.append("{}|".format(self.rc_other))
+
+    if self.rc_aug:
+      out.append("{}|".format(self.rc_aug))
+    
+    out.append("{}|{}|{}|".format(*self.energy_test))
+
+    out.append(":".join(self.projectors))
+
+    if self.config_gen:
+      out.append("{{{}}}".format(",".join(self.config_gen)))
+   
+    if self.flags:
+      out.append("(")
+      flags = []
+      for key, value in self.flags.items():
+        if value:
+          flags.append("{}={}".format(key, value))
+        else:
+          flags.append(key)
+      out.append(",".join(flags))
+      out.append(")")
+    
+    if self.config_test:
+      out.append("[{}]".format(",".join(self.config_test)))
+
+    return "".join(out)
 
 otfg = {'H':  "1|0.8|3.675|7.35|11.025|10UU(qc=6.4)[]",
       'He':  "1|0.8|0.8|0.6|14.7|16.5|20|10UU(qc=7)[]",
@@ -151,7 +208,8 @@ otfg = {'H':  "1|0.8|3.675|7.35|11.025|10UU(qc=6.4)[]",
       'Ru':  "3|2|2|1.5|9.6|10.6|11.7|40U=-2.93:50U=-0.2:41U=-1.825U=+0.25:42U=-0.285U=+0.25[]",
       'Rh':  "1|2.2|2.2|1.5|9|10|11.7|50U=-0.17:42U=-0.225U=+0.25[]",
       'Pd':  "3|2|2|1.5|10|12.1|14|40U:50U:41UU:42UU{5s0.05}(qc=5.5)[]",
-      'Ag':  "1|2.2|2.3|1.6|9|11|12|50U=-0.185U=+0.4:42U=-0.3U=+0[]",
+      #'Ag':  "1|2.2|2.3|1.6|9|11|12|50U=-0.185U=+0.4:42U=-0.3U=+0[]",
+      'Ag':  "1|2.2|2.4|1.6|9|11|12|50U=-0.185U=+0.4:42U=-0.3U=+0[]", # Altered for schro
       'Cd':  "1|2.2|2.2|1.6|8.7|9.6|10.7|50U+0U+0.1:42UU(qc=5,q0=4)[]",
       'In':  "3|2.3|2.3|1.6|9|10.5|12|50UU:51UU:42UU[]",
       'Sn':  "2|2|2|1.6|9.6|10.8|11.7|50U=-0.395U=+0.25:51U=-0.14U=+0.25[]",
@@ -186,3 +244,18 @@ otfg = {'H':  "1|0.8|3.675|7.35|11.025|10UU(qc=6.4)[]",
       'Am':  "2|2.1|2.1|1.5|14.7|16.2|18.4|60U:70U:61UU:53UU(qc=6)[]",
       'Cm':  "2|2.1|2.2|1.6|16.9|18.8|20.4|60U:70U:61UU:53UU:62L(qc=6)[]",}
 
+if __name__ == "__main__":
+  print otfg['Pb']
+  psp = PspOtfg("Pb", otfg['Pb'])
+
+  print psp
+
+  psp.flags['schro'] = None
+
+  print psp
+
+  del psp.flags['schro']
+  psp.flags['zora'] = None
+  psp.flags['qc'] = 7
+
+  print psp
