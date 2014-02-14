@@ -3,4 +3,8 @@
 *.swn
 *.swo
 build
+test_data/castep_cells/*.cell
+test_data/castep_params/*.cell
+notebooks/test/
+notebooks/.ipynb_checkpoints
 

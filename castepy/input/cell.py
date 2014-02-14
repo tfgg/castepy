@@ -1,7 +1,13 @@
+import os.path
+
 import re
 import numpy
 import math
-from castepy.ion import Ion, Ions, least_mirror
+
+from collections import Counter
+
+from castepy.atoms import AtomsView
+from castepy.atom import Atom
 
 class Cell:
     class LatticeNotImplemented(Exception): pass
@@ -9,13 +15,18 @@ class Cell:
 
     def __init__(self, cell_file=None, **kwargs):
         self.blocks = {}
-        self.other = []
         self.otherdict = {}
 
-        self.ions = Ions()
+        self.ions = None 
 
         if cell_file is not None:
-            self.parse_cell(cell_file)
+          if type(cell_file) is str:
+            if os.path.isfile(cell_file):
+              self.parse_cell(open(cell_file).read())
+            else:
+              self.parse_cell(cell_file)
+          elif type(cell_file) is file:
+            self.parse_cell(cell_file.read())
 
         if 'lattice' in kwargs:
           self.lattice_units = "ang"
@@ -50,15 +61,67 @@ class Cell:
         for o in other:
             o_s = o.strip()
             if len(o_s) > 0:
-                self.other.append(o_s)
-                
                 o_split = re.split("[\s:]+", o_s, maxsplit=1)
 
                 if len(o_split) == 2:
-                    self.otherdict[o_split[0]] = o_split[1]
+                  self.otherdict[o_split[0]] = o_split[1]
+                elif len(o_split) == 1:
+                  self.otherdict[o_split[0]] = None
+                else:
+                  raise Exception("More than two columns for cell-other split")
 
         self.parse_lattice()
         self.parse_ions()
+
+    def parse_lattice_cart(self, block):
+      lattice = []
+      units = "ang"
+
+      for line in block: 
+        lsplit = line.split()
+
+        if len(lsplit) == 3:
+          lattice.append((float(lsplit[0]),
+                          float(lsplit[1]),
+                          float(lsplit[2]),))
+        elif len(lsplit) == 1:
+          units = lsplit[0]
+
+      return (units, lattice)
+
+    def parse_lattice_abc(self, block):
+      lattice = []
+      units = None
+
+      pi = numpy.pi
+      sin = numpy.sin
+      cos = numpy.cos
+      sqrt = numpy.sqrt
+
+      a = b = c = alpha = beta = gamma = None
+
+      if len(block) == 3:
+        units = block[0]
+        a, b, c = map(float, block[1].split())
+        alpha, beta, gamma = map(float, block[2].split())
+      elif len(block) == 2:
+        units = "ang"
+        a, b, c = map(float, block[0].split())
+        alpha, beta, gamma = map(float, block[1].split())
+
+      alpha = alpha * pi / 180.0
+      beta = beta * pi / 180.0
+      gamma = gamma * pi / 180.0
+
+      lattice.append([a, 0.0, 0.0])
+      lattice.append([b*cos(gamma), b*sin(gamma), 0.0])
+      lattice.append([c*cos(beta),
+                      c*(cos(alpha) - cos(beta)*cos(gamma))/sin(gamma),
+                      0.0])
+
+      lattice[2][2] = sqrt(c**2 - lattice[2][0]**2 - lattice[2][1]**2)
+
+      return (units, lattice)
 
     def parse_lattice(self):
         self.lattice_type = None
@@ -69,23 +132,18 @@ class Cell:
         if self.lattice_type is None:
           return
 
-        self.lattice_units = "ang"
-        
-        lattice = []
-        if self.lattice_type == 'LATTICE_CART':
-          for line in self.blocks[self.lattice_type]:
-            lsplit = line.split()
+        lattice = None
+        units = None
 
-            if len(lsplit) == 3:
-              lattice.append((float(lsplit[0]),
-                              float(lsplit[1]),
-                              float(lsplit[2]),))
-            elif len(lsplit) == 1:
-              self.lattice_units = lsplit[0]
+        if self.lattice_type == "LATTICE_CART":
+          units, lattice = self.parse_lattice_cart(self.blocks["LATTICE_CART"])
+        elif self.lattice_type == "LATTICE_ABC":
+          units, lattice = self.parse_lattice_abc(self.blocks["LATTICE_ABC"])
         else:
           raise self.LatticeNotImplemented("%s not implemented in parser" % self.lattice_type)
 
         self.lattice = numpy.array(lattice)
+        self.lattice_units = units
 
         if self.lattice.shape != (3,3):
           raise self.LatticeWrongShape("Lattice vectors given not 3x3")
@@ -108,56 +166,61 @@ class Cell:
         convert = False # Dont convert frac to cart
         if self.ions_type == 'POSITIONS_FRAC':
           convert = True
-	
+
+        atoms = []
+
+        index_counter = Counter()
+
         self.ions_units = None
         for line in self.blocks[self.ions_type]: # Include positions frac
           lsplit = line.split()
 
           if len(lsplit) == 4:
             s, x, y, z = lsplit
-            p = (float(x), float(y), float(z))
+            position = (float(x), float(y), float(z))
 
-            s = s.split(":")[0]
+            sl = s.split(":")
+
+            species = sl[0]
+
+            # Atoms are 1-indexed to match castep.
+            index_counter[species] += 1
+            index = index_counter[species]
+
+            if len(sl) > 1:
+              label = sl[1]
+            else:
+              label = species
 
             if convert:
-              p = numpy.dot(self.basis.T, p)
+              position = numpy.dot(self.basis.T, position)
 
-            self.ions.add(Ion(s, p))
+            atoms.append(Atom(species, index, position, label))
+
           elif len(lsplit) == 1:
             self.ions_units = lsplit[0]
 
         if self.ions_units is None:
           self.ions_units = 'ang'
 
+        # If we've converted, change the basis
         if convert:
           self.ions_type = 'POSITIONS_ABS'
           self.basis = numpy.array([[1.0, 0.0, 0.0],
                                     [0.0, 1.0, 0.0],
                                     [0.0, 0.0, 1.0]])
 
-        self.ions.lattice = self.lattice
-        self.ions.basis = self.basis
+        self.ions = AtomsView(atoms, self.lattice)
 
     def regen_ion_block(self):
         for type in ['POSITIONS_ABS', 'POSITIONS_FRAC']: # Clear out any other ion blocks
           if type in self.blocks:
             del self.blocks[type]
 
-        self.blocks[self.ions_type] = [self.ions_units] + ["%s %f %f %f" % (ion.s, ion.p[0], ion.p[1], ion.p[2]) for ion in self.ions.ions]
+        self.blocks[self.ions_type] = [self.ions_units] + ["{} {:f} {:f} {:f}".format(atom.species, atom.position[0], atom.position[1], atom.position[2]) for atom in self.ions]
 
     def regen_lattice_block(self):
-        self.blocks[self.lattice_type] = [self.lattice_units] + ["%f %f %f" % (a,b,c) for a,b,c in self.ions.lattice]
-
-    def jcoupling_shift_origin(self):
-        """ Hack to move the perturbing NMR nucleus onto the origin """
-        if 'jcoupling_site' not in self.otherdict:
-          j_site = raw_input("Specify the j-coupling site: ").split()
-          self.other.append("jcoupling_site: " + " ".join(j_site))
-        else: 
-          j_site = self.otherdict['jcoupling_site'].split()
-        
-        j_site_ion = self.ions.get_species(j_site[0], int(j_site[1]))
-        self.ions.translate_origin(j_site_ion.p) 
+        self.blocks[self.lattice_type] = [self.lattice_units] + ["{:f} {:f} {:f}".format(a,b,c) for a,b,c in self.ions.lattice]
 
     def make_unique_ions(self):
         """ Generate a unique set of the ions, fix duplicates """
@@ -182,56 +245,22 @@ class Cell:
 
         self.regen_ion_block()
    
-    # Geometric routines
-    def closest(self, q):
-      """
-        Find the ion closest to q, accounting for cyclic coordinates.
-      """
-
-      min_d2 = None
-      min_ion = None
-      min_p = None
-     
-      for ion in self.ions:
-        d2,p = least_mirror(ion.p, q, self.basis, self.ions.lattice)
-
-        if min_d2 is None or d2 < min_d2:
-          min_d2 = d2
-          min_ion = ion
-          min_p = p
-
-      return (min_ion, math.sqrt(min_d2), min_p)
-
-    def least_mirror(self, p, q):
-      return least_mirror(p, q, self.ions.basis, self.ions.lattice)
-
-    def neighbours(self, q, max_dist=None, above_index=0, species=None):
-      """
-        Return neighbours of q in distance order, for easy slicing
-      """
-    
-      ions = []
-      for i in range(above_index, len(self.ions)):
-        ion = self.ions[i]
-
-        d2, p = self.least_mirror(ion.p, q)
-
-        if (max_dist is None or d2 < max_dist**2) and (species is None or ion.s in species):
-          ions.append((ion, math.sqrt(d2), p))
-    
-      return sorted(ions, key=lambda (ion,d,p): d)
-
     def __str__(self):
         self.regen_ion_block()
         self.regen_lattice_block()
-        s  = ""
+        
+        out = []
         for name, lines in self.blocks.items():
-            s += "%%block %s\n" % name
-            s += "\n".join(lines)
-            s += "\n%%endblock %s\n\n" % name
+            out.append("%block {}".format(name))
+            out += lines
+            out.append("%endblock {}".format(name))
+            out.append("")
 
-        for line in self.other:
-            s += "%s\n" % line
+        for key, value in self.otherdict.items():
+            if value is not None:
+              out.append("{}: {}".format(key, value))
+            else:
+              out.append(key)
 
-        return s
+        return "\n".join(out)
 

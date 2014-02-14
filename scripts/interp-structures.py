@@ -1,3 +1,4 @@
+#!python
 import sys
 from numpy import array
 from castepy.cell import Cell
