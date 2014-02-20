@@ -8,7 +8,7 @@ from decorators import lazyproperty
 class Atom(object):
   def __init__(self, species, index, position, label=None):
     self._species = species 
-    self._index = index
+    self._index = int(index)
     self._position = numpy.array(position)
 
     if label is not None:
