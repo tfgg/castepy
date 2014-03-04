@@ -7,12 +7,9 @@ import pipes
 import itertools
 
 import castepy.settings as settings
-
 from castepy.input import cell, pot, parameters
-from castepy.calc import CastepCalc
 from castepy.utils import calc_from_path
-
-from castepy.templates.submission_scripts import get_submission_script
+from castepy.templates.submission_scripts import SubmissionScript
 
 jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
@@ -56,6 +53,8 @@ def make_command(args):
   for source,site,cut_off_energy,xc_functional,pot in param_prod:
 
     source_dir, source_name = calc_from_path(source)
+
+    # Set up following directory structure:
     # [rel/nrel]/[usp/ncp]/[xc_functional]/[structure]/[cutoff]/[site]
 
     dir_path = [a.target_dir]
@@ -127,26 +126,19 @@ def round_cores_up(n, m):
 def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc_functional='pbe', cut_off_energy=80, usp_pot=False, c=None, queue="parallel.q", **kwargs):
 
   source_dir, source_name = calc_from_path(source)
-  calc = CastepCalc(source_dir, source_name)
 
   xc_functional = xc_functional.lower()
 
   if c is None:
-    c = cell.Cell(calc.cell_file)
+    c = cell.Cell(os.path.join(source_dir, "{}.cell".format(source_name)))
 
   if usp_pot:
-    pot.add_potentials_usp(c,rel_pot)
+    pot.add_potentials_usp(c, rel_pot)
   else:
-    if xc_functional == 'pbe':
-      _, required_files = pot.add_potentials(settings.NCP_PSPOT_PBE_DIR, None, c, rel_pot)
-    elif xc_functional == 'lda':
-      _, required_files = pot.add_potentials(settings.NCP_PSPOT_LDA_DIR, None, c, rel_pot)
-    else:
-      raise Exception("Cannot use XC functional %s with NCPs" % xc_functional)
+    potentials = pot.add_potentials_asc(c, xc_functional, rel_pot)
 
-    pot.link_files(required_files, target_dir)
-
-  c.other = []
+    for potential in potentials:
+      potential.link_files(target_dir)
 
   if jc_s is None:
     # Let's first see if we can guess the species from the target directory.
@@ -156,7 +148,7 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
     if species_matches:
       jc_s = species_matches[0][0]
       jc_i = int(species_matches[0][1])
-      jsiteraw = raw_input("Specify the j-coupling site (%s %d): " % (jc_s, jc_i))
+      jsiteraw = raw_input("Specify the j-coupling site ({:s} {:d}): ".format(jc_s, jc_i))
 
       if jsiteraw:
         j_site = jsiteraw.split()
@@ -173,12 +165,9 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
     try:
       jc_ion = c.ions.species(jc_s)[jc_i-1]
     except:
-      raise SiteNotPresent("Site %s %d not present" % (jc_s, jc_i))
+      raise SiteNotPresent("Site {:s} {:d} not present".format(jc_s, jc_i))
   
-    c.other.append("jcoupling_site: %s %d" % (jc_s, jc_i))
-    c.otherdict['jcoupling_site'] = "%s %d" % (jc_s, jc_i)
-
-  #c.ions.translate_origin([0.001, 0.001, 0.001])
+    c.otherdict['jcoupling_site'] = "{:s} {:d}".format(jc_s, jc_i)
 
   if 'KPOINTS_LIST' in c.blocks:
     del c.blocks['KPOINTS_LIST']
@@ -197,39 +186,19 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
 
   code = "castep-jcusp.mpi"
 
-  h_vmem = None
+  submission_script = SubmissionScript(queue, num_cores, code, target_name)
 
-  if queue in ["shortpara.q,", "parallel.q"]:
-    num_round_cores = round_cores_up(num_cores, 8)
-    h_vmem = float(num_round_cores)/8 * 23
-  elif queue in ["newpara.q"]:
-    num_round_cores = round_cores_up(num_cores, 12)
-    h_vmem = float(num_round_cores)/12 * 63
-  else:
-    raise Exception("Unknown queue system")
-
-  sh_context = {'seedname': pipes.quote(target_name),
-                'CASTEPY_ROOT': settings.CASTEPY_ROOT,
-                'USER_EMAIL': settings.USER_EMAIL,
-                'num_cores': num_cores,
-                'num_round_cores': num_round_cores,
-                'h_vmem': h_vmem,
-                'queue': queue,
-                'code': code}
-
-  sh_source = get_submission_script()
   sh_target_file = open(sh_target, "w+")
   param_target_file = open(param_target, "w+")
+  cell_target_file = open(cell_target, "w+")
 
-  print >>sh_target_file, sh_source % sh_context
+  print >>sh_target_file, submission_script
   print >>param_target_file, params
+  print >>cell_target_file, c
 
   sh_target_file.close()
   param_target_file.close()
-
-  cell_target_file = open(cell_target, "w+")
-
-  print >>cell_target_file, c
+  cell_target_file.close()
 
 if __name__ == "__main__":
   make_command(sys.argv[1:])

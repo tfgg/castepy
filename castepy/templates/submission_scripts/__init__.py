@@ -1,5 +1,6 @@
 import os.path
 import math
+import pipes
 
 import castepy.settings as settings
 
@@ -73,7 +74,7 @@ class SubmissionScript(object):
             'h_vmem': self.h_vmem,
             'num_cores': self.num_cores,
             'code': self.code,
-            'seedname': self.seedname,}
+            'seedname': pipes.quote(self.seedname),}
 
   def __str__(self):
     return sub_map[self.platform] % self.data_dict()
