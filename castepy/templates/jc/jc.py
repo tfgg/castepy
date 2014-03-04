@@ -100,16 +100,15 @@ def make_command(args):
       usp_pot = False
 
     try:
-      make(source,
-           target_dir,
-           jc_s,
-           jc_i,
-           num_cores=a.num_cores,
-           rel_pot=a.rel,
-           usp_pot=usp_pot,
-           xc_functional=xc_functional,
-           cut_off_energy=cut_off_energy,
-           queue=a.queue)
+      task = JcouplingTask(num_cores=a.num_cores,
+                           rel_pot=a.rel,
+                           usp_pot=usp_pot,
+                           xc_functional=xc_functional,
+                           cut_off_energy=cut_off_energy,
+                           queue=a.queue)
+
+      task(source, target_dir, jc_s, jc_i)
+
     except SiteNotPresent, e:
       print e
 
@@ -122,10 +121,6 @@ class SiteNotPresent(Exception):
 
 def round_cores_up(n, m):
   return int(math.ceil(float(n)/m)*m)
-
-def make(*args, **kwargs):
-  task = JcouplingTask(**kwargs)
-  task(*args)
 
 class JcouplingTask(object):
   merge_cell = Cell(open(os.path.join(jc_path, "jc.cell")).read())
