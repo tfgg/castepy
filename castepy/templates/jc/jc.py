@@ -7,14 +7,14 @@ import pipes
 import itertools
 
 import castepy.settings as settings
-from castepy.input import cell, pot, parameters
+from castepy.input import pot, parameters
+from castepy.input.cell import Cell
+from castepy.input.parameters import Parameters
 from castepy.utils import calc_from_path
 from castepy.templates.submission_scripts import SubmissionScript
 
 jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
-merge_cell = cell.Cell(open(os.path.join(jc_path, "jc.cell")).read())
-params = parameters.Parameters(open(os.path.join(jc_path, "jc.param")).read())
 
 regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 
@@ -102,9 +102,9 @@ def make_command(args):
     try:
       make(source,
            target_dir,
+           jc_s,
+           jc_i,
            num_cores=a.num_cores,
-           jc_s=jc_s,
-           jc_i=jc_i,
            rel_pot=a.rel,
            usp_pot=usp_pot,
            xc_functional=xc_functional,
@@ -123,27 +123,28 @@ class SiteNotPresent(Exception):
 def round_cores_up(n, m):
   return int(math.ceil(float(n)/m)*m)
 
-def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=None, rel_pot=False, xc_functional='pbe', cut_off_energy=80, usp_pot=False, c=None, queue="parallel.q", **kwargs):
+def make(*args, **kwargs):
+  task = JcouplingTask(**kwargs)
+  task(*args)
 
-  source_dir, source_name = calc_from_path(source)
+class JcouplingTask(object):
+  merge_cell = Cell(open(os.path.join(jc_path, "jc.cell")).read())
+  params = Parameters(open(os.path.join(jc_path, "jc.param")).read())
+  code = "castep-jcusp.mpi"
 
-  xc_functional = xc_functional.lower()
+  def __init__(self, num_cores=32, rel_pot=False, xc_functional='pbe', cut_off_energy=80, usp_pot=False, queue="parallel.q", **kwargs):
+    self.num_cores = num_cores
+    self.rel_pot = rel_pot
+    self.xc_functional = xc_functional.lower()
+    self.cut_off_energy = cut_off_energy
+    self.usp_pot = usp_pot
+    self.queue = queue
 
-  if c is None:
-    c = cell.Cell(os.path.join(source_dir, "{}.cell".format(source_name)))
-
-  if usp_pot:
-    pot.add_potentials_usp(c, rel_pot)
-  else:
-    potentials = pot.add_potentials_asc(c, xc_functional, rel_pot)
-
-    for potential in potentials:
-      potential.link_files(target_dir)
-
-  if jc_s is None:
-    # Let's first see if we can guess the species from the target directory.
-    # I usually name mine e.g. Pb17, so it can guess from that
+  def get_jcoupling_site(self, target_dir):
     species_matches = regex_species.findall(target_dir) 
+
+    jc_s = None
+    jc_i = None
 
     if species_matches:
       jc_s = species_matches[0][0]
@@ -160,45 +161,65 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
       j_site = jsiteraw.split()
       jc_s = j_site[0]
       jc_i = int(j_site[1])
-
-  if jc_s is not None:
-    try:
-      jc_ion = c.ions.species(jc_s)[jc_i-1]
-    except:
-      raise SiteNotPresent("Site {:s} {:d} not present".format(jc_s, jc_i))
   
-    c.otherdict['jcoupling_site'] = "{:s} {:d}".format(jc_s, jc_i)
+    return (jc_s, jc_i)
 
-  if 'KPOINTS_LIST' in c.blocks:
-    del c.blocks['KPOINTS_LIST']
-  
-  c.otherdict.update(merge_cell.otherdict)
+  def __call__(self, source, target_dir, jc_s, jc_i, cell=None):
+    source_dir, source_name = calc_from_path(source)
 
-  if target_name is None:
+    if cell is None:
+      cell = Cell(os.path.join(source_dir, "{}.cell".format(source_name)))
+
+    if self.usp_pot:
+      pot.add_potentials_usp(cell, self.rel_pot)
+    else:
+      potentials = pot.add_potentials_asc(cell, self.xc_functional, self.rel_pot)
+
+      for potential in potentials:
+        potential.link_files(target_dir)
+
+    if jc_s is None:
+      jc_s, jc_i = self.get_jcoupling_site(target_dir) 
+
+    if jc_s is not None:
+      try:
+        jc_ion = cell.ions.species(jc_s)[jc_i-1]
+      except Exception, e:
+        print e
+        raise SiteNotPresent("Site {:s} {:d} not present".format(jc_s, jc_i))
+    
+      cell.otherdict['jcoupling_site'] = "{:s} {:d}".format(jc_s, jc_i)
+
+    if 'KPOINTS_LIST' in cell.blocks:
+      del cell.blocks['KPOINTS_LIST']
+    
+    cell.otherdict.update(self.merge_cell.otherdict)
+    
+    self.params.xc_functional = self.xc_functional
+    self.params.cut_off_energy = self.cut_off_energy
+
     target_name = source_name
 
-  cell_target = os.path.join(target_dir, "%s.cell" % target_name)
-  param_target = os.path.join(target_dir, "%s.param" % target_name)
-  sh_target = os.path.join(target_dir, "%s.sh" % target_name)
+    cell_target = os.path.join(target_dir, "%s.cell" % target_name)
+    param_target = os.path.join(target_dir, "%s.param" % target_name)
+    sh_target = os.path.join(target_dir, "%s.sh" % target_name)
 
-  params.xc_functional = xc_functional
-  params.cut_off_energy = cut_off_energy
+    submission_script = SubmissionScript(self.queue,
+                                         self.num_cores,
+                                         self.code,
+                                         target_name)
 
-  code = "castep-jcusp.mpi"
+    sh_target_file = open(sh_target, "w+")
+    param_target_file = open(param_target, "w+")
+    cell_target_file = open(cell_target, "w+")
 
-  submission_script = SubmissionScript(queue, num_cores, code, target_name)
+    print >>sh_target_file, submission_script
+    print >>param_target_file, self.params
+    print >>cell_target_file, cell
 
-  sh_target_file = open(sh_target, "w+")
-  param_target_file = open(param_target, "w+")
-  cell_target_file = open(cell_target, "w+")
-
-  print >>sh_target_file, submission_script
-  print >>param_target_file, params
-  print >>cell_target_file, c
-
-  sh_target_file.close()
-  param_target_file.close()
-  cell_target_file.close()
+    sh_target_file.close()
+    param_target_file.close()
+    cell_target_file.close()
 
 if __name__ == "__main__":
   make_command(sys.argv[1:])
