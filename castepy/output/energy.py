@@ -4,20 +4,23 @@ import math
 
 # Final energy, E             =  -126966.5122468     eV
 
-energy_regex = re.compile("Final energy, E\s+=\s{0,}([0-9.\-]+)\s+eV")
-energy_regex2 = re.compile("Final energy\s+=\s{0,}([0-9.\-]+)\s+eV")
+class TotalEnergyResult(object):
+  class CantFindEnergy(Exception):
+    pass
 
-class CantFindEnergy(Exception):
-  pass
+  energy_regex = re.compile("Final energy, E\s+=\s{0,}([0-9.\-]+)\s+eV")
+  energy_regex2 = re.compile("Final energy\s+=\s{0,}([0-9.\-]+)\s+eV")
 
-def parse(castep_file):
-  energies = energy_regex.findall(castep_file)
-  energies += energy_regex2.findall(castep_file)
+  @classmethod
+  def load(klass, castep_file):
+    energies = klass.energy_regex.findall(castep_file)
+    energies += klass.energy_regex2.findall(castep_file)
 
-  if len(energies) == 0:
-    raise CantFindEnergy()
-  else:
-    return float(energies[len(energies)-1])
+    if len(energies) == 0:
+      raise klass.CantFindEnergy()
+    else:
+      for energy in energies:
+        yield float(energy), 'eV'
 
 class SCFResult(object):
   find_lines = re.compile(r'(.*?)\<\-\- SCF\n')
@@ -26,13 +29,17 @@ class SCFResult(object):
     self.steps = scf_run
 
   def __str__(self):
-    return "# loop energy energy_gain log_energy_gain timer\n" + "\n".join([" ".join(map(str, step)) for step in self.steps])
+    lines = ["# loop energy energy_gain log_energy_gain timer"]
+    
+    for step in self.steps:
+      lines.append("{loop} {energy} {energy_gain} {log_gain} {time}".format(**step))
+
+    return "\n".join(lines)
 
   @classmethod
   def load(klass, castep_file):
     scf_lines = klass.find_lines.findall(castep_file)
 
-    scf_runs = []
     scf_run = []
 
     for line in scf_lines:
@@ -52,7 +59,6 @@ class SCFResult(object):
       elif len(cols) == 5:
         loop, energy, fermi_energy, energy_gain, timer = cols
       else:
-        #print len(cols)
         continue
         
       if loop == 'energy':
@@ -68,16 +74,14 @@ class SCFResult(object):
       timer = float(timer)
         
       if scf_run and loop == 0:
-        scf_runs.append(scf_run)
+        yield SCFResult(scf_run)
         scf_run = []
 
-      scf_run.append((loop, energy, energy_gain, math.log(abs(energy_gain), 10), timer))
+      scf_run.append({'loop': loop,
+                      'energy': energy,
+                      'energy_gain': energy_gain,
+                      'log_gain': math.log(abs(energy_gain), 10),
+                      'time': timer})
 
-    scf_runs.append(scf_run)
-
-    scf_results = []
-    for scf_run in scf_runs:
-      scf_results.append(SCFResult(scf_run))
-
-    return scf_results
+    yield SCFResult(scf_run)
 
