@@ -34,32 +34,22 @@ def add_potentials(pot_dir, dir_path, cell_file, rel=False):
   c.blocks['SPECIES_POT'] = species_pot
   return (c, required_files)
 
-def add_potentials_usp(cell_file, rel=False, type='schro'):
-  if rel:
-    type = 'zora'
-
+def add_potentials_usp(cell_file, rel=False):
   if cell_file.__class__ != Cell:
     c = Cell(open(cell_file).read())
   else:
     c = cell_file
- 
-  def make_lab(usp_s, type):
-    if '(' in usp_s:
-      return usp_s.replace(')', ',%s)' % type)
-    else:
-      return usp_s.replace('[', '(%s)[' % type)
   
-  if rel:
-    species_pot = []
-    for s, n in c.ions.species():
-      if periodic_table[s] >= 37:
-        species_pot.append("%s %s" % (s, make_lab(otfg[s], 'dirac')))
-      else:
-        species_pot.append("%s %s" % (s, make_lab(otfg[s], 'schro')))
-  else:
-    species_pot = []
-    for s, n in c.ions.species():
-      species_pot.append("%s %s" % (s, make_lab(otfg[s], type)))
+  species_pot = []
+  for s in c.ions.species_index:
+    pot = PspOtfg(s, otfg[s])
+
+    if rel and periodic_table[s] >= 37:
+      pot.flags['zora'] = None
+    else:
+      pot.flags['schro'] = None
+        
+    species_pot.append("{} {}".format(s, pot))
 
   c.blocks['SPECIES_POT'] = species_pot
 

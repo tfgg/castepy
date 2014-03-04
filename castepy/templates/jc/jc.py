@@ -171,19 +171,19 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
 
   if jc_s is not None:
     try:
-      jc_ion = c.ions.get_species(jc_s, jc_i)
+      jc_ion = c.ions.species(jc_s)[jc_i-1]
     except:
       raise SiteNotPresent("Site %s %d not present" % (jc_s, jc_i))
   
     c.other.append("jcoupling_site: %s %d" % (jc_s, jc_i))
     c.otherdict['jcoupling_site'] = "%s %d" % (jc_s, jc_i)
 
-  c.ions.translate_origin([0.001, 0.001, 0.001])
+  #c.ions.translate_origin([0.001, 0.001, 0.001])
 
   if 'KPOINTS_LIST' in c.blocks:
     del c.blocks['KPOINTS_LIST']
   
-  c.other += merge_cell.other
+  c.otherdict.update(merge_cell.otherdict)
 
   if target_name is None:
     target_name = source_name
@@ -192,15 +192,12 @@ def make(source, target_dir, num_cores=32, target_name=None, jc_s=None, jc_i=Non
   param_target = os.path.join(target_dir, "%s.param" % target_name)
   sh_target = os.path.join(target_dir, "%s.sh" % target_name)
 
-  params.xc_functional[0] = xc_functional
-  params.cut_off_energy[0] = cut_off_energy
+  params.xc_functional = xc_functional
+  params.cut_off_energy = cut_off_energy
 
-  if usp_pot:
-    code = "castep-jcusp.mpi"
-  else:
-    code = "castep-jcusp.mpi"
+  code = "castep-jcusp.mpi"
 
-  h_vmem = 0.0
+  h_vmem = None
 
   if queue in ["shortpara.q,", "parallel.q"]:
     num_round_cores = round_cores_up(num_cores, 8)
