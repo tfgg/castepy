@@ -119,7 +119,8 @@ class JcouplingTask(object):
         potential.link_files(target_dir)
     
     # Generate submission script and write all the files out
-    target_name = source_name
+    if target_name is None:
+      target_name = source_name
 
     cell_target = os.path.join(target_dir, "%s.cell" % target_name)
     param_target = os.path.join(target_dir, "%s.param" % target_name)
@@ -130,15 +131,12 @@ class JcouplingTask(object):
                                          self.code,
                                          target_name)
 
-    sh_target_file = open(sh_target, "w+")
-    param_target_file = open(param_target, "w+")
-    cell_target_file = open(cell_target, "w+")
 
-    print >>sh_target_file, submission_script
-    print >>param_target_file, self.params
-    print >>cell_target_file, cell
+    with open(sh_target, "w+") as sh_target_file,
+         open(param_target, "w+") as param_target_file,
+         open(cell_target, "w+") as cell_target_file:
 
-    sh_target_file.close()
-    param_target_file.close()
-    cell_target_file.close()
+      print >>sh_target_file, submission_script
+      print >>param_target_file, self.params
+      print >>cell_target_file, self.cell
 
