@@ -1,14 +1,18 @@
 import os
 
 import castepy.settings as settings
-from castepy.input import cell, parameters, pot
+from castepy.input import pot
+from castepy.input.cell import Cell
+from castepy.input.parameters import Parameters
+from castepy.templates.submission_scripts import SubmissionScript
 from castepy.util import calc_from_path
 
 nmr_path = os.path.join(settings.CASTEPY_ROOT, "templates/nmr")
 
 class NMRTask(object):
-  merge_cell = cell.Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
-  params = parameters.Parameters(open(os.path.join(nmr_path, "nmr.param")).read())
+  merge_cell = Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
+  params = Parameters(open(os.path.join(nmr_path, "nmr.param")).read())
+  code = "castep-jcusp.mpi"
 
   def __init__(self, cell=None, source=None, target_name=None, num_cores=32, queue="parallel.q", xc_functional="pbe", cut_off_energy=50, usp_pot=True, rel_pot=True, efg_only=False):
     self.cell = cell
@@ -34,17 +38,19 @@ class NMRTask(object):
       raise Exception("If no cell is provided, target_name must be specified")
 
     if self.source is not None:
-      source_dir, source_name = calc_from_path(self.source)
+      source_dir, self.source_name = calc_from_path(self.source)
 
       if self.cell is None:
-        self.cell = Cell(os.path.join(source_dir, "{}.cell".format(source_name)))
+        self.cell = Cell(os.path.join(source_dir, "{}.cell".format(self.source_name)))
 
   def make(self, target_dir):
-    self.cell.otherdict.update(merge_cell.otherdict)
-    self.cell.blocks.update(merge_cell.blocks)
+    self.get_cell()
+
+    self.cell.otherdict.update(self.merge_cell.otherdict)
+    self.cell.blocks.update(self.merge_cell.blocks)
 
     if self.usp_pot:
-      pot.add_potentials_usp(cell, self.rel_pot)
+      pot.add_potentials_usp(self.cell, self.rel_pot)
 
     else:
       potentials = pot.add_potentials_asc(self.cell, self.xc_functional, self.rel_pot)
@@ -52,28 +58,28 @@ class NMRTask(object):
       for potential in potentials:
         potential.link_files(target_dir)
 
-    params.xc_functional = xc_functional
-    params.cut_off_energy = cut_off_energy
+    self.params.xc_functional = self.xc_functional
+    self.params.cut_off_energy = self.cut_off_energy
 
-    if efg_only:
-      params.magres_task = "efg"
+    if self.efg_only:
+      self.params.magres_task = "efg"
     else:
-      params.magres_task = "nmr"
+      self.params.magres_task = "nmr"
 
-    if target_name is None:
-      target_name = source_name
+    if self.target_name is None:
+      self.target_name = self.source_name
 
-    cell_target = os.path.join(target_dir, "%s.cell" % target_name)
-    param_target = os.path.join(target_dir, "%s.param" % target_name)
-    sh_target = os.path.join(target_dir, "%s.sh" % target_name)
+    cell_target = os.path.join(target_dir, "%s.cell" % self.target_name)
+    param_target = os.path.join(target_dir, "%s.param" % self.target_name)
+    sh_target = os.path.join(target_dir, "%s.sh" % self.target_name)
 
     submission_script = SubmissionScript(self.queue,
                                          self.num_cores,
                                          self.code,
-                                         target_name)
+                                         self.target_name)
 
-    with open(sh_target, "w+") as sh_target_file,
-         open(param_target, "w+") as param_target_file,
+    with open(sh_target, "w+") as sh_target_file,\
+         open(param_target, "w+") as param_target_file,\
          open(cell_target, "w+") as cell_target_file:
 
       print >>sh_target_file, submission_script

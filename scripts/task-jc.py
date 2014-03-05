@@ -1,4 +1,5 @@
 #!python
+import sys, os
 import shutil
 import re
 import itertools
@@ -102,7 +103,7 @@ def make_command(args):
 
       task.make(target_dir)
 
-    except SiteNotPresent, e:
+    except JcouplingTask.SiteNotPresent, e:
       print e
 
       # If we've just made this directory, trash it
@@ -111,3 +112,4 @@ def make_command(args):
 
 if __name__ == "__main__":
   make_command(sys.argv[1:])
+

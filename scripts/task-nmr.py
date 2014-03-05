@@ -1,12 +1,13 @@
 #!python
+import sys
 import argparse
 
 from castepy.tasks import NMRTask
 
 parser = argparse.ArgumentParser(description='Create a CASTEP NMR calculation.')
 
-parser.add_argument('source', help='A cell file to build the calculation from.')
 parser.add_argument('target_dir', help='A directory to build the calculation in.')
+parser.add_argument('source', help='A cell file to build the calculation from.')
 parser.add_argument('-n', '--num_cores', type=int, help='Number of cores to use.', default=32)
 parser.add_argument('-q', '--queue', type=str, help='SGE queue to use.', default="parallel.q")
 parser.add_argument('-x', '--xc_functional', help='The XC functional to use', default="PBE")

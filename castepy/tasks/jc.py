@@ -13,18 +13,15 @@ jc_path = os.path.join(settings.CASTEPY_ROOT, "templates/jc")
 
 regex_species = re.compile('([A-Za-z]+)([0-9]+)')
 
-class SiteNotPresent(Exception):
-  pass
-
-def round_cores_up(n, m):
-  return int(math.ceil(float(n)/m)*m)
-
 class JcouplingTask(object):
+  class SiteNotPresent(Exception):
+    pass
+
   merge_cell = Cell(open(os.path.join(jc_path, "jc.cell")).read())
   params = Parameters(open(os.path.join(jc_path, "jc.param")).read())
   code = "castep-jcusp.mpi"
 
-  def __init__(self, num_cores=32, rel_pot=False, usp_pot=False, xc_functional='pbe', cut_off_energy=80, queue="parallel.q", jc_s, jc_i, cell=None, target_name=None, source=None):
+  def __init__(self, num_cores=32, rel_pot=False, usp_pot=False, xc_functional='pbe', cut_off_energy=80, queue="parallel.q", jc_s=None, jc_i=None, cell=None, target_name=None, source=None):
     self.num_cores = num_cores
     self.rel_pot = rel_pot
     self.xc_functional = xc_functional.lower()
@@ -74,10 +71,10 @@ class JcouplingTask(object):
       raise Exception("If no cell is provided, target_name must be specified")
 
     if self.source is not None:
-      source_dir, source_name = calc_from_path(self.source)
+      source_dir, self.source_name = calc_from_path(self.source)
 
       if self.cell is None:
-        self.cell = Cell(os.path.join(source_dir, "{}.cell".format(source_name)))
+        self.cell = Cell(os.path.join(source_dir, "{}.cell".format(self.source_name)))
 
   def make(self, target_dir):
     """
@@ -93,15 +90,15 @@ class JcouplingTask(object):
     # Set up the site in the cell
     if self.jc_s is not None:
       try:
-        jc_ion = cell.ions.species(self.jc_s)[self.jc_i-1]
+        jc_ion = self.cell.ions.species(self.jc_s)[self.jc_i-1]
       except IndexError:
-        raise SiteNotPresent("Site {:s} {:d} not present".format(self.jc_s, self.jc_i))
+        raise self.SiteNotPresent("Site {:s} {:d} not present".format(self.jc_s, self.jc_i))
     
-      cell.otherdict['jcoupling_site'] = "{:s} {:d}".format(self.jc_s, self.jc_i)
+      self.cell.otherdict['jcoupling_site'] = "{:s} {:d}".format(self.jc_s, self.jc_i)
 
     # Remove extraneous kpoints and add in default cell setup
-    if 'KPOINTS_LIST' in cell.blocks:
-      del cell.blocks['KPOINTS_LIST']
+    if 'KPOINTS_LIST' in self.cell.blocks:
+      del self.cell.blocks['KPOINTS_LIST']
     
     self.cell.otherdict.update(self.merge_cell.otherdict)
     
@@ -111,29 +108,29 @@ class JcouplingTask(object):
 
     # Add pseudopotentials
     if self.usp_pot:
-      pot.add_potentials_usp(cell, self.rel_pot)
+      pot.add_potentials_usp(self.cell, self.rel_pot)
     else:
-      potentials = pot.add_potentials_asc(cell, self.xc_functional, self.rel_pot)
+      potentials = pot.add_potentials_asc(self.cell, self.xc_functional, self.rel_pot)
 
       for potential in potentials:
         potential.link_files(target_dir)
     
     # Generate submission script and write all the files out
-    if target_name is None:
-      target_name = source_name
+    if self.target_name is None:
+      self.target_name = self.source_name
 
-    cell_target = os.path.join(target_dir, "%s.cell" % target_name)
-    param_target = os.path.join(target_dir, "%s.param" % target_name)
-    sh_target = os.path.join(target_dir, "%s.sh" % target_name)
+    cell_target = os.path.join(target_dir, "%s.cell" % self.target_name)
+    param_target = os.path.join(target_dir, "%s.param" % self.target_name)
+    sh_target = os.path.join(target_dir, "%s.sh" % self.target_name)
 
     submission_script = SubmissionScript(self.queue,
                                          self.num_cores,
                                          self.code,
-                                         target_name)
+                                         self.target_name)
 
 
-    with open(sh_target, "w+") as sh_target_file,
-         open(param_target, "w+") as param_target_file,
+    with open(sh_target, "w+") as sh_target_file, \
+         open(param_target, "w+") as param_target_file, \
          open(cell_target, "w+") as cell_target_file:
 
       print >>sh_target_file, submission_script
