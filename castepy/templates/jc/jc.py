@@ -130,7 +130,7 @@ class JcouplingTask(object):
   params = Parameters(open(os.path.join(jc_path, "jc.param")).read())
   code = "castep-jcusp.mpi"
 
-  def __init__(self, num_cores=32, rel_pot=False, usp_pot=False, xc_functional='pbe', cut_off_energy=80, queue="parallel.q", jc_s, jc_i, cell=None, target_name=None, source=None):
+  def __init__(self, num_cores=32, rel_pot=False, usp_pot=False, xc_functional='pbe', cut_off_energy=80, queue="parallel.q", jc_s=None, jc_i=None, cell=None, target_name=None, source=None):
     self.num_cores = num_cores
     self.rel_pot = rel_pot
     self.xc_functional = xc_functional.lower()
