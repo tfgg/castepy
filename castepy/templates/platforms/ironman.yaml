@@ -1,0 +1,18 @@
+name: ironman
+queues:
+  - name: parallel.q
+    max_nodes: 35
+    cores_per_node: 8
+    memory_per_node: 23
+    specify_memory: per_job
+  - name: shortpara.q
+    max_nodes: 1
+    cores_per_node: 8
+    memory_per_node: 23
+    specify_memory: per_job
+  - name: newpara.q
+    max_nodes: 24
+    cores_per_node: 12
+    memory_per_node: 63
+    specify_memory: per_job
+

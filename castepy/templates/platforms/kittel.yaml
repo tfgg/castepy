@@ -1,0 +1,13 @@
+name: kittel
+queues:
+  - name: parallel.q
+    max_nodes: 35
+    cores_per_node: 8
+    memory_per_node: 23
+    specify_memory: per_core
+  - name: shortpara.q
+    max_nodes: 1
+    cores_per_node: 8
+    memory_per_node: 23
+    specify_memory: per_core
+

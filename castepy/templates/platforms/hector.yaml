@@ -1,0 +1,8 @@
+name: hector
+queues:
+  - name: default 
+    max_nodes: 2816
+    cores_per_node: 32
+    memory_per_node: 32
+    specify_memory: per_job
+
