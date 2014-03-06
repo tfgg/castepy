@@ -36,7 +36,7 @@ setup(name='Castepy',
       author='Timothy Green',
       author_email='timothy.green@gmail.com',
       url='',
-      packages=['castepy','castepy.input', 'castepy.output'],
+      packages=['castepy','castepy.input', 'castepy.output', 'castepy.tasks'],
       package_data={'castepy': relative_find('castepy', 'templates'),},
       scripts=[os.path.join('scripts', f) for f in os.listdir('scripts')],
       )

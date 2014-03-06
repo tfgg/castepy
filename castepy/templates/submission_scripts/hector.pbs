@@ -3,7 +3,7 @@
 #PBS -V
 #PBS -l mppwidth=%(num_round_cores)d
 #PBS -l mppnppn=32
-#PBS -l walltime=00:15:00
+#PBS -l walltime=12:00:00
 #PBS -A e89-ox_m
 
 # Make sure any symbolic links are resolved to absolute path

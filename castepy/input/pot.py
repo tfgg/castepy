@@ -5,76 +5,85 @@ import os
 import sys
 import re
 
+from castepy import settings
 from castepy.input.cell import Cell
-from castepy.constants import periodic_table
+from castepy.constants import Z 
 
-def add_potentials(pot_dir, dir_path, cell_file, rel=False):
-  if cell_file.__class__ != Cell:
-    c = Cell(open(cell_file).read())
-  else:
-    c = cell_file
+def add_potentials_asc(c, xc="pbe", rel=False):
+  potentials = [PspASC(s, xc, rel) for s in c.ions.species_index]
 
-  species_pot_string = "%s %s_POT.ASC.DAT"
-  species_pot = []
-  required_files = set()
-  for s, n in c.ions.species():
-      species_pot.append(species_pot_string % (s, s))
-
-      # Check for relativistic potential
-      if rel and os.path.isfile(os.path.join(pot_dir, "%s_AEPS_REL.DAT" % s)):
-        required_files.add((os.path.join(pot_dir, "%s_AEPS_REL.DAT" % s), "%s_AEPS.DAT" % s))
-      elif os.path.isfile(os.path.join(pot_dir, "%s_AEPS.DAT" % s)):
-        required_files.add((os.path.join(pot_dir, "%s_AEPS.DAT" % s), "%s_AEPS.DAT" % s))
-
-      if rel and os.path.isfile(os.path.join(pot_dir, "%s_POT_REL.ASC.DAT" % s)):
-        required_files.add((os.path.join(pot_dir, "%s_POT_REL.ASC.DAT" % s), "%s_POT.ASC.DAT" % s))
-      else:
-        required_files.add((os.path.join(pot_dir, "%s_POT.ASC.DAT" % s), "%s_POT.ASC.DAT" % s))
-
-  c.blocks['SPECIES_POT'] = species_pot
-  return (c, required_files)
-
-def add_potentials_usp(cell_file, rel=False, type='schro'):
-  if rel:
-    type = 'zora'
-
-  if cell_file.__class__ != Cell:
-    c = Cell(open(cell_file).read())
-  else:
-    c = cell_file
- 
-  def make_lab(usp_s, type):
-    if '(' in usp_s:
-      return usp_s.replace(')', ',%s)' % type)
-    else:
-      return usp_s.replace('[', '(%s)[' % type)
+  c.blocks['SPECIES_POT'] = ["{} {}".format(pot.s, pot) for pot in potentials] 
   
-  if rel:
-    species_pot = []
-    for s, n in c.ions.species():
-      if periodic_table[s] >= 37:
-        species_pot.append("%s %s" % (s, make_lab(otfg[s], 'dirac')))
-      else:
-        species_pot.append("%s %s" % (s, make_lab(otfg[s], 'schro')))
+  return potentials
+
+def add_potentials_usp(cell_file, rel=False):
+  if cell_file.__class__ != Cell:
+    c = Cell(open(cell_file).read())
   else:
-    species_pot = []
-    for s, n in c.ions.species():
-      species_pot.append("%s %s" % (s, make_lab(otfg[s], type)))
+    c = cell_file
+  
+  species_pot = []
+  for s in c.ions.species_index:
+    pot = PspOtfg(s, otfg[s])
+
+    if rel and Z[s] >= 37:
+      pot.flags['zora'] = None
+    else:
+      pot.flags['schro'] = None
+        
+    species_pot.append("{} {}".format(s, pot))
 
   c.blocks['SPECIES_POT'] = species_pot
 
-  return (c, [])
+class PspASC(object):
+  pspot_dir = {'pbe': settings.NCP_PSPOT_PBE_DIR,
+               'lda': settings.NCP_PSPOT_LDA_DIR,}
 
-def link_files(required_files, dir_path):
-  for f, target_name in required_files:
-    if not os.path.isfile(f):
-      raise Exception("Required potential file \"%s\" doesn't exist." % f)
+  def __init__(self, s, xc="pbe", rel=False):
+    self.s = s
+    self.xc = xc
+    self.rel = rel
+
+  def required_files(self):
+    dir = self.pspot_dir[self.xc] 
+
+    if self.rel:
+      rtn = [(os.path.join(dir, "{}_POT_REL.ASC.DAT".format(self.s)), "{}_POT.ASC.DAT".format(self.s)),
+             (os.path.join(dir, "{}_AEPS_REL.DAT".format(self.s)), "{}_AEPS.DAT".format(self.s)),]
+
     else:
-      f = os.path.abspath(f)            
-      target = os.path.join(dir_path, target_name)
+      rtn = [(os.path.join(dir, "{}_POT.ASC.DAT".format(self.s)), "{}_POT.ASC.DAT".format(self.s)),
+             (os.path.join(dir, "{}_AEPS.DAT".format(self.s)), "{}_AEPS.DAT".format(self.s)),]
+      
+    if not all(os.path.isfile(path) for path, _ in rtn):
+      if self.rel:
+        rtn = [(os.path.join(dir, "{}_POT.ASC.DAT".format(self.s)), "{}_POT.ASC.DAT".format(self.s)),
+               (os.path.join(dir, "{}_AEPS.DAT".format(self.s)), "{}_AEPS.DAT".format(self.s)),]
 
-      if not os.path.isfile(target):
-        os.symlink(f, target)
+        if not all(os.path.isfile(path) for path, _ in rtn):
+          raise Exception("Could not find fallback non-rel pseudpotential files for {} (xc={}, rel={})".format(self.s, self.xc, self.rel))
+
+      else:
+        raise Exception("Could not find non-rel pseudpotential files for {} (xc={}, rel={})".format(self.s, self.xc, self.rel))
+
+    return rtn
+
+  def link_files(self, target_dir, replace=False):
+    paths = self.required_files()
+
+    for path, target_name in paths:
+      path = os.path.abspath(path)
+      target = os.path.join(target_dir, target_name)
+
+      if replace or not os.path.isfile(target):
+        if replace:
+          os.unlink(target)
+
+        os.symlink(path, target)
+
+  def __str__(self):
+    return "{0}_POT.ASC.DAT".format(self.s)
+
 
 class PspOtfg(object):
   def __init__(self, species, otfg_str):
