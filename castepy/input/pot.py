@@ -27,7 +27,10 @@ def add_potentials_usp(cell_file, rel=False):
     pot = PspOtfg(s, otfg[s])
 
     if rel and Z[s] >= 37:
-      pot.flags['zora'] = None
+      if rel == True:
+        pot.flags['zora'] = None
+      else:
+        pot.flags[rel] = None
     else:
       pot.flags['schro'] = None
         

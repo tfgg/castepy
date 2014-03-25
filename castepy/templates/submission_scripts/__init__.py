@@ -14,15 +14,19 @@ sub_map = {'ironman': getfile('ironman.sh'),
            'kittel': getfile('kittel.sh'),
            'hector': getfile('hector.pbs'),}
 
-def get_submission_script():
-  return sub_map[settings.PLATFORM]
+def get_submission_script(platform):
+  return sub_map[platform]
 
 def round_cores_up(n, m):
   return int(math.ceil(float(n)/m)*m)
 
 class SubmissionScript(object):
-  def __init__(self, queue, num_cores, code, seedname):
-    self.platform = settings.PLATFORM
+  platform = settings.PLATFORM
+
+  def __init__(self, queue, num_cores, code, seedname, platform=None):
+    if platform is not None:
+      self.platform = platform
+    
     self.queue = queue
     self.num_cores = num_cores
     self.code = code
@@ -45,6 +49,8 @@ class SubmissionScript(object):
         cores_per_node = 8
       elif self.queue == "serial.q":
         cores_per_node = 1
+    elif self.platform == "hector":
+      cores_per_node = 32
     else:
       raise Exception("Don't know cores per node for platform '%s'" % self.platform)
 
