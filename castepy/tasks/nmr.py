@@ -5,7 +5,7 @@ from castepy.input import pot
 from castepy.input.cell import Cell
 from castepy.input.parameters import Parameters
 from castepy.templates.submission_scripts import SubmissionScript
-from castepy.util import calc_from_path
+from castepy.utils import calc_from_path
 
 nmr_path = os.path.join(settings.CASTEPY_ROOT, "templates/nmr")
 

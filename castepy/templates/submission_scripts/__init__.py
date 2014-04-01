@@ -12,7 +12,8 @@ def getfile(p):
 
 sub_map = {'ironman': getfile('ironman.sh'),
            'kittel': getfile('kittel.sh'),
-           'hector': getfile('hector.pbs'),}
+           'hector': getfile('hector.pbs'),
+           'archer': getfile('archer.pbs')}
 
 def get_submission_script():
   return sub_map[settings.PLATFORM]
@@ -40,15 +41,21 @@ class SubmissionScript(object):
         cores_per_node = 1
       elif self.queue == "newpara.q":
         cores_per_node = 12
+
     elif self.platform == "kittel":
       if self.queue in ["parallel.q", "shortpara.q"]:
         cores_per_node = 8
       elif self.queue == "serial.q":
         cores_per_node = 1
+
+    elif self.platform == "archer":
+      cores_per_node = 24
+
     else:
       raise Exception("Don't know cores per node for platform '%s'" % self.platform)
 
     self.num_round_cores = round_cores_up(self.num_cores, cores_per_node)
+    self.num_nodes = self.num_round_cores / cores_per_node
 
     self.h_vmem = None
 
@@ -64,12 +71,20 @@ class SubmissionScript(object):
         self.h_vmem = 23.0 / 8
       elif self.queue == "serial.q":
         self.h_vmem = 23.0 / 8
+
+    elif self.platform == "archer":
+      self.h_vmem = None
+
     else:
       raise Exception("Don't know memory requirements for platform '%s'" % self.platform)
+
+    
+
 
   def data_dict(self):
     self.calc()
     return {'num_round_cores': self.num_round_cores,
+            'num_nodes': self.num_nodes,
             'queue': self.queue,
             'h_vmem': self.h_vmem,
             'num_cores': self.num_cores,

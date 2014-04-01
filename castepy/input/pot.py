@@ -26,7 +26,7 @@ def add_potentials_usp(cell_file, rel=False):
   for s in c.ions.species_index:
     pot = PspOtfg(s, otfg[s])
 
-    if rel and Z[s] >= 37:
+    if rel and Z[s] >= 19:
       pot.flags['zora'] = None
     else:
       pot.flags['schro'] = None
