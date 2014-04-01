@@ -1,9 +1,8 @@
 task: geometryoptimisation
-opt_strategy: speed    !HPC
+opt_strategy: speed
 geom_max_iter: 200
 geom_disp_tol: 5.000000000000000e-004
-page_wvfns: 0   !HPC
-!continuation: default !if you need to rerun
+page_wvfns: 0 
 geom_stress_tol: 0.020000000000000
 max_scf_cycles: 100
 fix_occupancy: true

@@ -26,8 +26,16 @@ def add_potentials_usp(cell_file, rel=False):
   for s in c.ions.species_index:
     pot = PspOtfg(s, otfg[s])
 
+<<<<<<< HEAD:castepy/input/pot.py
     if rel and Z[s] >= 19:
       pot.flags['zora'] = None
+=======
+    if rel and Z[s] >= 37:
+      if rel == True:
+        pot.flags['zora'] = None
+      else:
+        pot.flags[rel] = None
+>>>>>>> 05d98c4cb50eb375b269963f9a5b75a4d84a66fb:castepy/input/pot.py
     else:
       pot.flags['schro'] = None
         
