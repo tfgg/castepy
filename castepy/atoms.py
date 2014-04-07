@@ -102,6 +102,9 @@ class AtomsView(object):
       else:
         self.species_index[atom.species] = [atom]
 
+  def get(self, species, index):
+    return self.species_index[species][index-1]
+
   def label(self, label):
     """
       Return a AtomsView containing only atoms of the specified label.
@@ -233,7 +236,7 @@ class AtomsView(object):
   def __getitem__(self, idx):
     try:
       s, i = idx
-      return self.species_index[s][i]
+      return self.species_index[s][i-1]
     except:
       return self.atoms[idx]
 
