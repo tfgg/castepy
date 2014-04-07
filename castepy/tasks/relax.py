@@ -6,7 +6,7 @@ from castepy.input.cell import Cell
 from castepy.input.parameters import Parameters
 from castepy.input.constraint import add_constraints
 from castepy.templates.submission_scripts import SubmissionScript
-from castepy.util import calc_from_path
+from castepy.utils import calc_from_path
 
 relax_path = os.path.join(settings.CASTEPY_ROOT, "templates/relax")
 
