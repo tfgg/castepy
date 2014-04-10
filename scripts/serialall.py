@@ -1,4 +1,4 @@
-#!/home/green/bin/python
+#!python
 
 import sys, os
 import pipes

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!python
 
 import os, sys, getopt
 from castepy.input.cell import Cell

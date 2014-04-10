@@ -1,4 +1,4 @@
-#!/home/green/bin/python
+#!python
 import re
 import sys, os
 import math

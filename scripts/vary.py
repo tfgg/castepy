@@ -1,3 +1,4 @@
+#!python
 """
 
   Script for varying a bunch of variables in a bunch of files to generate a bunch of calculations.

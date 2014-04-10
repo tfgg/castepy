@@ -1,4 +1,4 @@
-#!/home/green/bin/python
+#!python
 # -*- coding: utf-8 -*-
 
 import os, sys

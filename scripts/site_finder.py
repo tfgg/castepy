@@ -1,3 +1,5 @@
+#!python
+
 import pickle
 
 from kmeans.kmeans import kmeans, classify
