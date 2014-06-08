@@ -13,7 +13,7 @@ relax_path = os.path.join(settings.CASTEPY_ROOT, "templates/relax")
 class GeometryRelaxationTask(object):
   merge_cell = Cell(open(os.path.join(relax_path, "relax.cell")).read())
   params = Parameters(open(os.path.join(relax_path, "relax.param")).read())
-  code = "castep.mpi"
+  code = "castep"
 
   def __init__(self, cell=None, source=None, target_name=None, num_cores=32, queue="parallel.q", xc_functional="pbe", cut_off_energy=50, usp_pot=True):
     self.cell = cell

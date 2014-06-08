@@ -12,7 +12,7 @@ parser.add_argument('-n', '--num_cores', type=int, help='Number of cores to use.
 parser.add_argument('-q', '--queue', type=str, help='SGE queue to use.', default="parallel.q")
 parser.add_argument('-x', '--xc_functional', help='The XC functional to use', default="PBE")
 parser.add_argument('-c', '--cut_off_energy', type=int, help='The cut-off energy to use (Rydberg)', default=50)
-parser.add_argument('-p', '--pot', help='What type(s) of pseudopotentials to use, separated by commas.', type=str, default="usp")
+parser.add_argument('-p', '--pot', help='What type of pseudopotential to use (usp or ncp).', type=str, default="usp")
 
 def make_command(args):
   a = parser.parse_args(args)
