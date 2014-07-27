@@ -3,6 +3,7 @@ opt_strategy : speed
 task        = magres
 magres_task = efg
 cut_off_energy  = 50 ry
+fine_grid_scale: 2
 
 !fix_occupancy: true
 bs_max_cg_steps : 5

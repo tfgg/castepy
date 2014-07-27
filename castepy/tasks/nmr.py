@@ -12,9 +12,12 @@ nmr_path = os.path.join(settings.CASTEPY_ROOT, "templates/nmr")
 class NMRTask(object):
   merge_cell = Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
   params = Parameters(open(os.path.join(nmr_path, "nmr.param")).read())
-  code = "castep-jcusp.mpi"
+  code = "castep-efg.mpi"
 
-  def __init__(self, cell=None, source=None, target_name=None, num_cores=32, queue="parallel.q", xc_functional="pbe", cut_off_energy=50, usp_pot=True, rel_pot=True, efg_only=False):
+  otfg_patch = {'Zn': "3|1.6|1.6|1.0|17|19|21|30U:31U:32:40:41{4s0.5,4p0.5}(qc=6.5)[]",
+               }
+
+  def __init__(self, cell=None, source=None, target_name=None, num_cores=32, queue="parallel.q", xc_functional="pbe", cut_off_energy=50, usp_pot=True, pot_type=None, efg_only=False):
     self.cell = cell
     self.source = source
     self.target_name = target_name
@@ -23,7 +26,7 @@ class NMRTask(object):
     self.xc_functional = xc_functional.lower()
     self.cut_off_energy = cut_off_energy
     self.usp_pot = usp_pot
-    self.rel_pot = rel_pot
+    self.pot_type = pot_type
     self.efg_only = efg_only
 
   def get_cell(self):
@@ -50,7 +53,7 @@ class NMRTask(object):
     self.cell.blocks.update(self.merge_cell.blocks)
 
     if self.usp_pot:
-      pot.add_potentials_usp(self.cell, self.rel_pot)
+      pot.add_potentials_usp(self.cell, self.pot_type, otfg_patch=self.otfg_patch)
 
     else:
       potentials = pot.add_potentials_asc(self.cell, self.xc_functional, self.rel_pot)
