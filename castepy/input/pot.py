@@ -179,6 +179,7 @@ class PspOtfg(object):
           flags.append("{}={}".format(key, value))
         else:
           flags.append(key)
+
       out.append(",".join(flags))
       out.append(")")
     
