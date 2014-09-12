@@ -108,7 +108,11 @@ class JcouplingTask(object):
 
     # Add pseudopotentials
     #if self.usp_pot:
-    #  pot.add_potentials_usp(self.cell, self.rel_pot)
+    #  if self.rel_pot:
+    #    rel_type = "zora"
+    #  else:
+    #    rel_type = "schro"
+    #  pot.add_potentials_usp(self.cell, rel_type)
     #else:
     #  potentials = pot.add_potentials_asc(self.cell, self.xc_functional, self.rel_pot)
 
