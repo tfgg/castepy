@@ -12,7 +12,7 @@ nmr_path = os.path.join(settings.CASTEPY_ROOT, "templates/nmr")
 class NMRTask(object):
   merge_cell = Cell(open(os.path.join(nmr_path, "nmr.cell")).read())
   params = Parameters(open(os.path.join(nmr_path, "nmr.param")).read())
-  code = "castep-efg.mpi"
+  code = "castep.mpi"
 
   otfg_patch = {'Zn': "3|1.6|1.6|1.0|17|19|21|30U:31U:32:40:41{4s0.5,4p0.5}(qc=6.5)[]",
                }

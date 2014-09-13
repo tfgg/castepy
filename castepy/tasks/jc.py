@@ -19,7 +19,7 @@ class JcouplingTask(object):
 
   merge_cell = Cell(open(os.path.join(jc_path, "jc.cell")).read())
   params = Parameters(open(os.path.join(jc_path, "jc.param")).read())
-  code = "castep-jcusp.mpi"
+  code = "castep.mpi"
 
   def __init__(self, num_cores=32, rel_pot=False, usp_pot=False, xc_functional='pbe', cut_off_energy=80, queue="parallel.q", jc_s=None, jc_i=None, cell=None, target_name=None, source=None):
     self.num_cores = num_cores
