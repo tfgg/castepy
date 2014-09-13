@@ -107,18 +107,17 @@ class JcouplingTask(object):
     self.params.cut_off_energy = self.cut_off_energy
 
     # Add pseudopotentials
-    if self.usp_pot:
-      if self.rel_pot:
-        rel_type = "zora"
-      else:
-        rel_type = "schro"
+    #if self.usp_pot:
+    #  if self.rel_pot:
+    #    rel_type = "zora"
+    #  else:
+    #    rel_type = "schro"
+    #  pot.add_potentials_usp(self.cell, rel_type)
+    #else:
+    #  potentials = pot.add_potentials_asc(self.cell, self.xc_functional, self.rel_pot)
 
-      pot.add_potentials_usp(self.cell, rel_type)
-    else:
-      potentials = pot.add_potentials_asc(self.cell, self.xc_functional, self.rel_pot)
-
-      for potential in potentials:
-        potential.link_files(target_dir)
+    #  for potential in potentials:
+    #    potential.link_files(target_dir)
     
     # Generate submission script and write all the files out
     if self.target_name is None:

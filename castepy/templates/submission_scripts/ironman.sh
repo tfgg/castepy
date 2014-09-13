@@ -4,8 +4,8 @@
 #$ -pe orte %(num_round_cores)d
 #$ -V
 #$ -l qname=%(queue)s
-#$ -l h_rt=24:00:00
-#$ -l h_vmem=%(h_vmem)fG
+##$ -l h_rt=24:00:00
+##$ -l h_vmem=%(h_vmem)fG
 
 module load intel/ics-2012
 module load openmpi-x86_64
