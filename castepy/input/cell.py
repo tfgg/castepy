@@ -222,29 +222,25 @@ class Cell:
     def regen_lattice_block(self):
         self.blocks[self.lattice_type] = [self.lattice_units] + ["{:f} {:f} {:f}".format(a,b,c) for a,b,c in self.ions.lattice]
 
-    def make_unique_ions(self):
+    def find_unique_ions(self):
         """ Generate a unique set of the ions, fix duplicates """
         ions = dict()
 
-        for ion in self.ions:
-          trunc_pos = (round(ion[1][0], 2), round(ion[1][1], 2), round(ion[1][2], 2))
-          if trunc_pos in ions:
-            ions[trunc_pos].append(ion)
-          else:
-            ions[trunc_pos] = [ion]
+        to_remove = set()
 
-        ions_prime = []
-        for trunc_pos, ions in sorted(ions.items()):
-          #print trunc_pos, len(ions)
-          ions_prime.append(ions[0])
+        for ion1 in self.ions:
+          if ion1 not in to_remove:
+            for ion2 in self.ions:
+              if ion1 != ion2:
+                dr, _ = self.ions.least_mirror(ion1.position, ion2.position)
 
-        #print len(self.ions)
-        #print len(ions_prime)
-        self.ions = ions_prime
-        self.ion_index = self.make_ion_index()
+                if dr < 0.01:
+                  print ion1, ion2
+                  to_remove.add(ion2)
 
-        self.regen_ion_block()
-   
+        return AtomsView([atom for atom in self.ions if atom not in to_remove],
+                         self.ions.lattice)
+ 
     def __str__(self):
         self.regen_ion_block()
         self.regen_lattice_block()
