@@ -16,6 +16,12 @@ class Atom(object):
     else:
       self._label = self._species
 
+  def copy(self):
+    """
+      Return a deep copy of the object.
+    """
+    return Atom(self.species, self.index, numpy.array(self.position), self.label)
+
   def __str__(self):
     if self.species != self.label:
       return "%s(%s)%d" % (self.species, self.label, self.index)

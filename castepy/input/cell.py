@@ -6,7 +6,7 @@ import math
 
 from collections import Counter
 
-from castepy.atoms import AtomsView
+from castepy.atoms import AtomsView, Atoms
 from castepy.atom import Atom
 
 class Cell:
@@ -25,8 +25,21 @@ class Cell:
               self.parse_cell(open(cell_file).read())
             else:
               self.parse_cell(cell_file)
+
           elif type(cell_file) is file:
             self.parse_cell(cell_file.read())
+
+          elif hasattr(cell_file, "ions"):
+            new_ions = Atoms([a.copy() for a in cell_file.ions])
+            new_ions.lattice = cell_file.lattice
+
+            self.ions = new_ions
+            self.lattice_units = cell_file.lattice_units
+            self.lattice_type = cell_file.lattice_type
+            self.ions_units = cell_file.ions_units
+            self.ions_type = cell_file.ions_type
+            self.basis = cell_file.basis
+
 
         if 'lattice' in kwargs:
           self.lattice_units = "ang"
