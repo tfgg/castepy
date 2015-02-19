@@ -273,3 +273,26 @@ class Cell:
 
         return "\n".join(out)
 
+    def supercell(self, N1, N2, N3):
+        new_ions = []
+
+        index = 0
+        for ion in self.ions:
+          for n1 in range(N1):
+            for n2 in range(N2):
+              for n3 in range(N3):
+                R = numpy.dot(self.lattice, numpy.array([n1, n2, n3]))
+                new_pos = ion.position + R
+
+                new_ion = Atom(ion.species, index, new_pos)
+                new_ions.append(new_ion)
+                index += 1
+
+        supercell = Cell(self)
+
+        supercell.lattice = numpy.dot(numpy.diag([N1, N2, N3]), self.lattice)
+        supercell.ions = Atoms(new_ions)
+        supercell.ions.lattice = supercell.lattice
+
+        return supercell
+
